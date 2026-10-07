@@ -50,7 +50,7 @@ body[data-wall="mist"] .dicon{color:#16171c}
 body[data-wall="mist"] .dicon > span:last-child{text-shadow:none}
 
 /* App tile: near-black, hairline, icon in the app's tint. */
-.tile{--tint:var(--accent);width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;position:relative;overflow:hidden;color:var(--tint);background:#0e0e10;border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 16px rgba(0,0,0,.45)}
+.tile{--tint:var(--accent);width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;position:relative;overflow:hidden;color:var(--tint);background:var(--tile);border:1px solid var(--tile-line);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 16px rgba(0,0,0,.35)}
 .tile .ico{width:24px;height:24px}
 .tile img{width:26px;height:26px;object-fit:contain;animation:fadeIn var(--dur-2) var(--ease-out) both}
 .tile .letter{font-size:20px;font-weight:600;color:var(--tint)}

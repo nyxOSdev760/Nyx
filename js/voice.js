@@ -58,6 +58,9 @@ export const Voice = {
     if (!fb || !me) { this.fail('Sign in to use voice.'); return; }
     if (Account.banned) { this.fail('You’re banned, so you can’t join voice.'); return; }
     if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { this.fail('This browser doesn’t support voice chat.'); return; }
+    // Create the audio context now, while the Join click still counts as a user
+    // gesture; created after the mic prompt it could start suspended.
+    try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); this.audioCtx.resume().catch(() => {}); } catch { this.audioCtx = null; }
     this.state = 'joining'; this.error = ''; this.emit();
     const { db, F } = fb;
     try {
@@ -65,11 +68,12 @@ export const Voice = {
       const snap = await F.getDocs(F.collection(db, 'voice', ROOM, 'peers'));
       const now = Date.now();
       const others = snap.docs.filter(d => d.id !== me.uid && d.data().seen && d.data().seen.toMillis() + STALE > now + this.skew);
-      if (others.length >= MAX_PEOPLE) { this.state = 'idle'; this.fail(`Voice is full (${MAX_PEOPLE} people). Try again in a bit.`); return; }
+      if (others.length >= MAX_PEOPLE) { this.cleanupLocal(); this.state = 'idle'; this.fail(`Voice is full (${MAX_PEOPLE} people). Try again in a bit.`); return; }
     } catch (e) { console.warn(e); }
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
     } catch (e) {
+      this.cleanupLocal();
       this.state = 'idle';
       const n = e && e.name;
       this.fail(n === 'NotAllowedError' || n === 'SecurityError' ? 'Microphone access was blocked. Allow the microphone for this site (the icon in the address bar), then press Join again.'
@@ -82,10 +86,7 @@ export const Voice = {
     this.muted = false;
     this.me = { ...me };
     this.seq = 0;
-    try {
-      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      this.audioCtx.resume().catch(() => {});
-    } catch { this.audioCtx = null; }
+    if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume().catch(() => {});
     this.addMeter(me.uid, this.stream);
     try {
       await F.setDoc(F.doc(db, 'voice', ROOM, 'peers', me.uid), { name: me.name, session: this.session, joinedAt: F.serverTimestamp(), seen: F.serverTimestamp(), muted: false });

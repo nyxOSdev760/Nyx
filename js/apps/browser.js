@@ -11,7 +11,7 @@ import { Account } from '../account.js';
 
 /* Small favicon for a tab or a recent site; a globe until it loads. */
 function siteIcon(url) {
-  const box = h('span', { class: 'fav', 'aria-hidden': 'true', svg: ICONS.globe });
+  const box = h('span', { class: 'site-ico', 'aria-hidden': 'true', svg: ICONS.globe });
   let host = '';
   try { host = new URL(url).hostname; } catch { return box; }
   const img = new Image();
@@ -58,12 +58,14 @@ registerApp({
     addr.addEventListener('focus', () => { addr.value = displayUrl(cur(active)); addr.select(); });
     addr.addEventListener('blur', () => { addr.value = labelFor(cur(active)); });
     addr.addEventListener('keydown', e => { if (e.key === 'Escape') addr.blur(); });
-    root.addEventListener('keydown', ctx.guard(e => {
+    // On the whole window, so shortcuts work after clicking its title bar or tabs.
+    const onKey = ctx.guard(e => {
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key.toLowerCase() === 'l') { e.preventDefault(); addr.focus(); }
       if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); go(1); }
-    }));
+    });
+    ctx.el.addEventListener('keydown', onKey);
 
     const cur = (tab) => (tab && tab.entries[tab.index]) || NEWTAB;
     const homeUrl = () => Settings.get('homepage') || NEWTAB;
@@ -126,7 +128,8 @@ registerApp({
         });
         const frame = tab.frame;
         frame.addEventListener('load', () => {
-          if (tab.frame !== frame || frame.src === 'about:blank' || !tab.loading) return;
+          // Ignore the initial about:blank load a new iframe fires when it's attached.
+          if (tab.frame !== frame || !frame.getAttribute('src') || frame.src === 'about:blank' || !tab.loading) return;
           clearTimeout(tab.timer);
           tab.loading = false; tab.slow = false;
           History.add(cur(tab), tab.title);
@@ -135,8 +138,8 @@ registerApp({
         });
         frame.addEventListener('error', () => { tab.loading = false; tab.error = { title: "This page couldn't be loaded", detail: 'The connection failed. Check your internet connection and try again.' }; renderView(tab); render(); });
       }
-      renderView(tab);
       tab.frame.src = target;
+      renderView(tab);
       tab.timer = setTimeout(() => { if (tab.loading) { tab.slow = true; render(); } }, 15000);
       render();
     }
@@ -210,7 +213,7 @@ registerApp({
         const isA = t === active, url = cur(t);
         const lbl = t.error ? 'Error' : t.title;
         return h('div', { class: 'br-tab' + (isA ? ' active' : '') + (t.loading ? ' loading' : '') },
-          t.loading ? h('span', { class: 'spinner', 'aria-hidden': 'true' }) : url === NEWTAB ? h('span', { class: 'fav', 'aria-hidden': 'true', svg: ICONS.sparkle }) : siteIcon(url),
+          t.loading ? h('span', { class: 'spinner', 'aria-hidden': 'true' }) : url === NEWTAB ? h('span', { class: 'site-ico', 'aria-hidden': 'true', svg: ICONS.sparkle }) : siteIcon(url),
           h('button', { class: 't', type: 'button', role: 'tab', 'aria-selected': String(isA), title: lbl, text: lbl, onclick: ctx.guard(() => select(t)) }),
           h('button', { class: 'x', type: 'button', 'aria-label': `Close tab ${lbl}`, title: 'Close tab', svg: ICONS.close, onclick: ctx.guard(e => { e.stopPropagation(); closeTab(t); }) }));
       }));
@@ -250,7 +253,7 @@ registerApp({
     newTab((ctx.args && ctx.args.url) || (Settings.get('homepage') || undefined));
     return {
       handleArgs: (a) => { if (a && a.url) newTab(a.url); },
-      destroy: () => { off.forEach(f => f()); tabs.forEach(t => { clearTimeout(t.timer); if (t.frame) t.frame.src = 'about:blank'; }); },
+      destroy: () => { ctx.el.removeEventListener('keydown', onKey); off.forEach(f => f()); tabs.forEach(t => { clearTimeout(t.timer); if (t.frame) t.frame.src = 'about:blank'; }); },
     };
   },
 });

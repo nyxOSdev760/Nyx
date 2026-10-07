@@ -1,0 +1,17 @@
+{
+  "name": "nyxos-tests",
+  "private": true,
+  "type": "module",
+  "description": "Firestore rules tests and end-to-end tests for NyxOS. Not needed to run the site.",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-nyx --config ../firebase.json \"node --test rules.test.mjs\"",
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-nyx --config ../firebase.json \"node e2e.mjs\"",
+    "test": "npm run test:rules && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.7.0",
+    "firebase-tools": "15.32.1",
+    "playwright": "1.56.1"
+  }
+}

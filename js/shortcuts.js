@@ -30,7 +30,7 @@ export function iconWithFallback(sources, letter, tint, size = '') {
   img.onload = () => {
     clearTimeout(timer);
     if (img.naturalWidth < 8) { next(); return; } // placeholder or empty icon
-    box.classList.add('fav');
+    box.classList.add('has-img');
     box.replaceChildren(img);
   };
   img.onerror = next;

@@ -43,7 +43,7 @@ registerApp({
     const urlField = (key, title, desc, placeholder, emptyLabel) => {
       const input = h('input', { class: 'field', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder, value: Settings.get(key), 'aria-label': title, style: 'flex:1' });
       const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
-      const form = h('form', { class: 'row nowrap' }, input, h('button', { class: 'btn primary', type: 'submit', text: 'Save' }),
+      const form = h('form', { class: 'row nowrap', novalidate: true }, input, h('button', { class: 'btn primary', type: 'submit', text: 'Save' }),
         h('button', { class: 'btn', type: 'button', text: emptyLabel, onclick: () => { input.value = ''; if (save(key, '', msg)) { msg.textContent = 'Cleared.'; msg.className = 'msg ok'; } } }));
       form.addEventListener('submit', e => {
         e.preventDefault();

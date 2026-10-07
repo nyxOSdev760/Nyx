@@ -33,6 +33,7 @@
   --hover:rgba(255,255,255,.05); --press:rgba(255,255,255,.085);
   --text:#ececee; --text-2:#9d9da6; --text-3:#65656e;
   --field:#0c0c0e;
+  --tile:#0e0e10; --tile-line:rgba(255,255,255,.09);
   --glass:rgba(12,12,14,.72);
   --shadow-1:0 1px 2px rgba(0,0,0,.6);
   --shadow-2:0 10px 30px rgba(0,0,0,.6);
@@ -47,6 +48,7 @@
   --hover:rgba(12,14,22,.045); --press:rgba(12,14,22,.08);
   --text:#16171c; --text-2:#5b5d68; --text-3:#8b8d98;
   --field:#ffffff;
+  --tile:#ffffff; --tile-line:rgba(12,14,22,.1);
   --glass:rgba(255,255,255,.78);
   --shadow-1:0 1px 2px rgba(12,14,22,.08);
   --shadow-2:0 10px 30px rgba(12,14,22,.12);

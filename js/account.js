@@ -52,6 +52,8 @@ export const Account = {
       return new Promise(resolve => {
         let first = true;
         fb.U.onAuthStateChanged(fb.auth, (u) => {
+          // Sign-up finishes (username reserved, profile named) before anyone sees it.
+          if (this._signingUp) return;
           const prefix = u ? (u.email || '').split('@')[0] : '';
           // Right after sign-up the profile name isn't set yet; use the name being registered.
           const pending = this._pendingName && this._pendingName.toLowerCase() === prefix ? this._pendingName : '';
@@ -61,6 +63,7 @@ export const Account = {
           this.status = 'ready';
           this.changed();
           if (first) { first = false; resolve(this.user); }
+          if (u && !u.displayName && !pending) this.repairProfile(u);
         }, e => { console.error(e); });
       });
     }).catch(e => {
@@ -93,6 +96,29 @@ export const Account = {
     }, quiet));
   },
 
+  /* An account whose sign-up was interrupted (tab closed mid-way) has no
+     profile name and maybe no username reservation. Finish the job. */
+  async repairProfile(u) {
+    const { db, F, U } = this.fb;
+    const lower = (u.email || '').split('@')[0];
+    if (!USERNAME_RE.test(lower)) return;
+    try {
+      const ref = F.doc(db, 'usernames', lower);
+      let name = lower;
+      const snap = await F.getDoc(ref);
+      if (snap.exists()) { if (snap.data().uid !== u.uid) return; name = String(snap.data().name || lower); }
+      else {
+        await F.runTransaction(db, async tx => {
+          if ((await tx.get(ref)).exists()) throw err('taken', 'taken');
+          tx.set(ref, { uid: u.uid, name, createdAt: F.serverTimestamp() });
+        });
+        await F.setDoc(F.doc(db, 'users', u.uid), { name, createdAt: F.serverTimestamp() }).catch(() => {});
+      }
+      await U.updateProfile(u, { displayName: name });
+      if (this.user && this.user.uid === u.uid) { this.user = { uid: u.uid, name }; this.changed(); }
+    } catch (e) { console.warn('Profile repair skipped:', e.code || e.message); }
+  },
+
   validateName(name) {
     if (!name) return 'Enter a username.';
     if (name.length < 3 || name.length > 20) return 'Usernames are 3 to 20 characters.';
@@ -116,8 +142,9 @@ export const Account = {
     } catch (e) { if (e.code === 'taken') throw e; /* fall through; the transaction decides */ }
     let cred;
     this._pendingName = name;
+    this._signingUp = true;
     try { cred = await U.createUserWithEmailAndPassword(auth, emailFor(name), password); }
-    catch (e) { this._pendingName = ''; throw friendly(e); }
+    catch (e) { this._pendingName = ''; this._signingUp = false; throw friendly(e); }
     try {
       await F.runTransaction(db, async tx => {
         const ref = F.doc(db, 'usernames', lower);
@@ -130,11 +157,15 @@ export const Account = {
     } catch (e) {
       // Roll back the half-made account so the name isn't stuck.
       try { await cred.user.delete(); } catch {}
-      this._pendingName = '';
+      this._pendingName = ''; this._signingUp = false;
+      this.user = null; this.changed();
       throw friendly(e);
     }
-    this._pendingName = '';
+    this._pendingName = ''; this._signingUp = false;
     this.user = { uid: cred.user.uid, name };
+    this.isAdmin = false; this.banned = false;
+    this.status = 'ready';
+    this.watchRoles();
     this.changed();
     return this.user;
   },
