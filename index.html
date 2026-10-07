@@ -4,44 +4,92 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<title>secretly-not-a-proxy</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237aa2ff' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='10' ry='4.5' transform='rotate(-24 12 12)'/%3E%3C/svg%3E">
+<title>NyxOS</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23000'/%3E%3Cg transform='translate(4 4)' fill='%239db4ff'%3E%3Cpath d='M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z'/%3E%3Ccircle cx='17.6' cy='6.6' r='1.05'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script>
 /* Set theme before first paint to avoid a flash. Mirrors Settings logic below. */
 (function(){try{var s=JSON.parse(localStorage.getItem('snap:settings')||'{}')||{};var t=s.theme;if(t==='auto'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else if(t!=='light'){t='dark';}document.documentElement.dataset.theme=t;}catch(e){}})();
 </script>
 <style>
+/* NyxOS design tokens.
+   Base is pure black. Three near-black surfaces, hairline borders, one accent
+   used sparingly. Spacing is on a 4/8px scale. Motion is short and springy. */
 :root{
-  --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  --accent:#7aa2ff; --on-accent:#0d1426;
-  --taskbar-h:56px;
-  --r-win:12px; --r-ctl:8px;
-  --ease:cubic-bezier(.2,.8,.2,1);
+  --font-ui:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-display:'Instrument Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
+  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-pill:999px;
+  --fs-xs:11px; --fs-sm:12px; --fs-md:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px; --fs-3xl:44px;
+
+  /* Springy for transforms (slight overshoot), plain ease-out for fades. */
+  --ease-spring:cubic-bezier(.3,1.35,.55,1);
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --ease-in:cubic-bezier(.55,0,.8,.2);
+  --dur-1:150ms; --dur-2:200ms; --dur-3:250ms;
+
+  --accent:#9db4ff; --on-accent:#0b0f1c;
+  --accent-soft:color-mix(in srgb,var(--accent) 13%,transparent);
+  --accent-line:color-mix(in srgb,var(--accent) 42%,transparent);
+
+  --dock-h:56px;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px); --safe-r:env(safe-area-inset-right,0px);
 }
 :root[data-theme="dark"]{
-  --text:#ececf1; --muted:#8e8f9b; --faint:#5e5f6b;
-  --surface:rgba(6,6,8,.8); --surface-solid:#050506; --raised:rgba(255,255,255,.045); --raised-2:rgba(255,255,255,.085);
-  --line:rgba(255,255,255,.08); --field:#0a0a0c; --shadow:0 24px 70px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.02);
-  --danger:#ff6b6b; --ok:#5fd3a0;
+  --bg:#000;
+  --s1:#0a0a0b;   /* windows, panels */
+  --s2:#111113;   /* raised controls, cards */
+  --s3:#19191c;   /* hover, pressed */
+  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.11); --line-3:rgba(255,255,255,.18);
+  --hover:rgba(255,255,255,.05); --press:rgba(255,255,255,.085);
+  --text:#ececee; --text-2:#9d9da6; --text-3:#65656e;
+  --field:#0c0c0e;
+  --glass:rgba(12,12,14,.72);
+  --shadow-1:0 1px 2px rgba(0,0,0,.6);
+  --shadow-2:0 10px 30px rgba(0,0,0,.6);
+  --shadow-3:0 28px 80px rgba(0,0,0,.75),0 2px 8px rgba(0,0,0,.5);
+  --danger:#ff7b7b; --ok:#7ed6a7; --warn:#efc46b;
+  color-scheme:dark;
 }
 :root[data-theme="light"]{
-  --text:#1a1f2e; --muted:#5a6175; --faint:#8a90a2;
-  --surface:rgba(248,249,252,.84); --surface-solid:#f5f6f9; --raised:rgba(20,30,60,.045); --raised-2:rgba(20,30,60,.09);
-  --line:rgba(20,30,60,.11); --field:#ffffff; --shadow:0 20px 60px rgba(30,40,70,.22),0 2px 8px rgba(30,40,70,.1);
-  --danger:#d93838; --ok:#1f9d68;
+  --bg:#f2f2f4;
+  --s1:#ffffff; --s2:#f6f6f8; --s3:#ececef;
+  --line:rgba(12,14,22,.08); --line-2:rgba(12,14,22,.12); --line-3:rgba(12,14,22,.2);
+  --hover:rgba(12,14,22,.045); --press:rgba(12,14,22,.08);
+  --text:#16171c; --text-2:#5b5d68; --text-3:#8b8d98;
+  --field:#ffffff;
+  --glass:rgba(255,255,255,.78);
+  --shadow-1:0 1px 2px rgba(12,14,22,.08);
+  --shadow-2:0 10px 30px rgba(12,14,22,.12);
+  --shadow-3:0 28px 70px rgba(12,14,22,.18),0 2px 8px rgba(12,14,22,.08);
+  --danger:#d63c3c; --ok:#1d8f5f; --warn:#a86b00;
+  color-scheme:light;
 }
+
+/* Reduced motion: OS setting or the in-app toggle. */
+/* Aliases for the component styles below (replaced in the shell redesign). */
+:root{--taskbar-h:56px;--r-win:var(--r-md);--r-ctl:var(--r-sm);--ease:var(--ease-out)}
+:root[data-theme]{--muted:var(--text-2);--faint:var(--text-3);--surface:var(--glass);--surface-solid:var(--s1);--raised:var(--hover);--raised-2:var(--press);--shadow:var(--shadow-3)}
+.wordmark{display:inline-flex;align-items:baseline;gap:.08em;letter-spacing:0;line-height:1}
+.wordmark .wm-nyx{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:1.25em;letter-spacing:-.01em}
+.wordmark .wm-os{font-family:var(--font-ui);font-weight:600;font-size:.62em;letter-spacing:.14em;color:var(--text-2)}
+.mark{display:block;color:var(--accent)}
+h1,h2{font-weight:600;letter-spacing:-.01em}
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{font-family:var(--font);font-size:14px;line-height:1.45;color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background:#000}
+body{font-family:var(--font-ui);font-feature-settings:"ss01";font-size:14px;line-height:1.45;color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background:#000}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [hidden]{display:none!important}
 svg{display:block}
-.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* Wallpapers */
@@ -367,7 +415,7 @@ body.wm-dragging{cursor:grabbing}
 /* Boot & fatal */
 #boot{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#000;transition:opacity .35s}
 #boot.done{opacity:0;pointer-events:none}
-#boot svg{width:46px;height:46px;color:#7aa2ff;stroke-width:1.5;animation:pulse 1.4s ease-in-out infinite}
+#boot svg{width:44px;height:44px;color:var(--accent)}
 @keyframes pulse{50%{opacity:.45}}
 #fatal{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:#000;color:#e9ebf3}
 #fatal div{max-width:440px}
@@ -416,7 +464,7 @@ body.wm-dragging{cursor:grabbing}
 </style>
 </head>
 <body data-wall="oled">
-<div id="boot" role="status" aria-label="Starting secretly-not-a-proxy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-24 12 12)"/></svg></div>
+<div id="boot" role="status" aria-label="Starting NyxOS"><svg class="mark" viewBox="0 0 24 24"><path fill="currentColor" d="M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z"/><circle cx="17.6" cy="6.6" r="1.05" fill="currentColor"/></svg></div>
 
 <main id="desktop" aria-label="Desktop">
   <canvas id="dots" aria-hidden="true"></canvas>
@@ -429,7 +477,7 @@ body.wm-dragging{cursor:grabbing}
     <label class="search"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search apps</span><input id="launcher-q" type="search" placeholder="Search apps" autocomplete="off"></label>
   </div>
   <div id="launcher-list" class="app-list"></div>
-  <div class="panel-foot"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-24 12 12)"/></svg>secretly-not-a-proxy</div>
+  <div class="panel-foot"><svg class="ico" viewBox="0 0 24 24"><path d="M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z"/></svg><span class="wordmark"><span class="wm-nyx">Nyx</span><span class="wm-os">OS</span></span></div>
 </div>
 
 <div id="notif-center" class="panel glass" role="dialog" aria-label="Notifications" hidden>
@@ -439,7 +487,7 @@ body.wm-dragging{cursor:grabbing}
 
 <nav id="taskbar" class="glass" aria-label="Taskbar">
   <button class="mode-btn" id="mode-btn" type="button"></button>
-  <button class="tb-btn" id="launcher-btn" aria-expanded="false" aria-controls="launcher"><svg class="ico brand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-24 12 12)"/></svg><span class="lbl">Apps</span></button>
+  <button class="tb-btn" id="launcher-btn" aria-expanded="false" aria-controls="launcher"><svg class="ico brand" viewBox="0 0 24 24"><path d="M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z"/></svg><span class="lbl">Apps</span></button>
   <div id="running" role="toolbar" aria-label="Open windows"></div>
   <button class="tb-btn bell" id="bell-btn" aria-expanded="false" aria-controls="notif-center" aria-label="Notifications"><svg class="ico" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" hidden></span></button>
   <button id="clock" aria-label="Clock. Open Settings for clock options"><span id="clock-time"></span><span id="clock-date"></span></button>
@@ -449,7 +497,7 @@ body.wm-dragging{cursor:grabbing}
 
 <div id="fatal" role="alert" hidden>
   <div>
-    <h1>secretly-not-a-proxy couldn't start</h1>
+    <h1>NyxOS couldn't start</h1>
     <p>Something went wrong while loading. Saved settings may be damaged. Resetting them usually fixes this.</p>
     <pre id="fatal-msg"></pre>
     <div class="row"><button class="btn primary" id="fatal-reset">Reset settings and reload</button><button class="btn" onclick="location.reload()">Reload</button></div>
@@ -498,31 +546,59 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 const svg = (paths) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
+
+/* The NyxOS mark: a crescent with one star in its hollow. */
+const CRESCENT = 'M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z';
+const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${CRESCENT}"/><circle cx="17.6" cy="6.6" r="1.05" fill="currentColor"/></svg>`;
+
 const ICONS = {
-  logo: svg('<circle cx="12" cy="12" r="3.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-24 12 12)"/>'),
-  globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
-  sliders: svg('<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'),
-  min: svg('<path d="M5 12h14"/>'),
-  max: svg('<rect x="5" y="5" width="14" height="14" rx="2"/>'),
-  restore: svg('<rect x="4" y="8" width="12" height="12" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"/>'),
-  close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
-  back: svg('<path d="m15 18-6-6 6-6"/>'),
-  fwd: svg('<path d="m9 18 6-6-6-6"/>'),
-  reload: svg('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'),
-  stop: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
-  home: svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>'),
-  plus: svg('<path d="M12 5v14M5 12h14"/>'),
-  external: svg('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
-  expand: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
-  search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
-  lock: svg('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
-  paint: svg('<circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.2"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="16" cy="10" r="1.2"/><path d="M12 21a3 3 0 0 1 0-6h2"/>'),
-  monitor: svg('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'),
-  bell: svg('<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
-  db: svg('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
-  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>'),
-  clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
-  grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>'),
+  logo: svg(`<path d="${CRESCENT}"/>`),
+  globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.75 5.6 3.75 9S14.5 18.4 12 21M12 3C9.5 5.6 8.25 8.6 8.25 12S9.5 18.4 12 21"/>'),
+  sliders: svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
+  min: svg('<path d="M6.5 12h11"/>'),
+  max: svg('<rect x="6" y="6" width="12" height="12" rx="2"/>'),
+  restore: svg('<rect x="5.5" y="8.5" width="10" height="10" rx="2"/><path d="M8.5 5.5h8a2 2 0 0 1 2 2v8"/>'),
+  close: svg('<path d="M7 7l10 10M17 7 7 17"/>'),
+  back: svg('<path d="m14.5 18-6-6 6-6"/>'),
+  fwd: svg('<path d="m9.5 18 6-6-6-6"/>'),
+  reload: svg('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>'),
+  stop: svg('<path d="M7 7l10 10M17 7 7 17"/>'),
+  home: svg('<path d="M4 10.5 12 4l8 6.5"/><path d="M6 9v10.5h12V9"/>'),
+  plus: svg('<path d="M12 5.5v13M5.5 12h13"/>'),
+  external: svg('<path d="M14 4.5h5.5V10M19.5 4.5 11 13"/><path d="M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>'),
+  expand: svg('<path d="M4.5 9V4.5H9M19.5 9V4.5H15M4.5 15v4.5H9M19.5 15v4.5H15"/>'),
+  search: svg('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>'),
+  lock: svg('<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>'),
+  paint: svg('<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.4-1.9l-.4-.9c-.5-1.1.3-2.2 1.5-2.2H17a3.5 3.5 0 0 0 3.5-3.5c0-4.7-3.8-8.5-8.5-8.5Z"/><circle cx="7.8" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="8" r="1"/>'),
+  monitor: svg('<rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>'),
+  bell: svg('<path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 5.5 2.5 7.5 2.5 7.5H4s2.5-2 2.5-7.5"/><path d="M10.3 20.5a2 2 0 0 0 3.4 0"/>'),
+  db: svg('<ellipse cx="12" cy="6" rx="7.5" ry="2.75"/><path d="M4.5 6v12c0 1.5 3.4 2.75 7.5 2.75s7.5-1.25 7.5-2.75V6M4.5 12c0 1.5 3.4 2.75 7.5 2.75s7.5-1.25 7.5-2.75"/>'),
+  info: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.75v.01"/>'),
+  clock: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  grid: svg('<rect x="4.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.5"/>'),
+  chat: svg('<path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.5 3.5v-3.5h0a2 2 0 0 1-2-2Z"/>'),
+  mic: svg('<rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/>'),
+  micOff: svg('<path d="M15 9.5V6.5a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.8 2.4M5.5 11a6.5 6.5 0 0 0 10.4 5.2M18.5 11a6.4 6.4 0 0 1-.6 2.7M12 17.5v3M4 4l16 16"/>'),
+  phoneOff: svg('<path d="M3.5 14.2c4.7-4.3 12.3-4.3 17 0l-1.6 2.3a1 1 0 0 1-1.2.4l-2.6-1a1 1 0 0 1-.6-.9v-1.8a10.5 10.5 0 0 0-5 0V15a1 1 0 0 1-.6.9l-2.6 1a1 1 0 0 1-1.2-.4Z"/>'),
+  headphones: svg('<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>'),
+  user: svg('<circle cx="12" cy="8.5" r="3.75"/><path d="M4.75 20a7.25 7.25 0 0 1 14.5 0"/>'),
+  login: svg('<path d="M10 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H10M14 8l4 4-4 4M18 12H9"/>'),
+  logout: svg('<path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14M10 8l-4 4 4 4M6 12h9"/>'),
+  flag: svg('<path d="M5.5 20.5v-16M5.5 4.5h11l-2 4 2 4h-11"/>'),
+  ban: svg('<circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/>'),
+  trash: svg('<path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.9 12.5h9.2L17.5 7"/>'),
+  send: svg('<path d="M20.5 3.5 3.5 10.5l6.8 3.2 3.2 6.8Z"/><path d="m20.5 3.5-10.2 10.2"/>'),
+  window: svg('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17"/>'),
+  wand: svg('<path d="M4.5 19.5 14 10"/><path d="M15.5 3.5v3M14 5h3M19 8.5v2.5M17.75 9.75h2.5M10 3.5v2M9 4.5h2"/>'),
+  check: svg('<path d="m5.5 12.5 4 4 9-9"/>'),
+  chevDown: svg('<path d="m6.5 9.5 5.5 5.5 5.5-5.5"/>'),
+  chevRight: svg('<path d="m9.5 6.5 5.5 5.5-5.5 5.5"/>'),
+  more: svg('<circle cx="6" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18" cy="12" r=".9"/>'),
+  shield: svg('<path d="M12 3.5 5.5 6v5.5c0 4.1 2.8 7.4 6.5 8.9 3.7-1.5 6.5-4.8 6.5-8.9V6Z"/>'),
+  arrowDown: svg('<path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/>'),
+  alert: svg('<path d="M12 4.5 3 19.5h18Z"/><path d="M12 10v4.5M12 17v.01"/>'),
+  moon: svg(`<path d="${CRESCENT}"/>`),
+  sparkle: svg('<path d="M12 4c.6 3.9 2.1 5.4 6 6-3.9.6-5.4 2.1-6 6-.6-3.9-2.1-5.4-6-6 3.9-.6 5.4-2.1 6-6Z"/>'),
 };
 
 /* ---------- Storage (namespaced, never throws) ---------- */
@@ -590,13 +666,14 @@ const WALLPAPERS = [
   { id: 'oled', name: 'OLED dots' }, { id: 'night', name: 'Night sky' }, { id: 'dusk', name: 'Dusk' }, { id: 'slate', name: 'Slate' },
   { id: 'dots', name: 'Dot grid' }, { id: 'mist', name: 'Mist' },
 ];
+const DEFAULT_ACCENT = '#9db4ff';
 const ACCENTS = [
-  { v: '#7aa2ff', n: 'Periwinkle' }, { v: '#5fd3b0', n: 'Mint' }, { v: '#f2b44c', n: 'Amber' },
-  { v: '#f27a9b', n: 'Rose' }, { v: '#b48cff', n: 'Violet' }, { v: '#e8ecf4', n: 'Silver' },
+  { v: '#9db4ff', n: 'Moonlight' }, { v: '#d5d9e2', n: 'Silver' }, { v: '#7fd3b8', n: 'Mint' },
+  { v: '#eeb868', n: 'Amber' }, { v: '#ee93a9', n: 'Rose' }, { v: '#b7a8f5', n: 'Lilac' },
 ];
 const SCHEMA = {
   theme: { def: 'dark', valid: v => ['auto', 'light', 'dark'].includes(v) },
-  accent: { def: '#7aa2ff', valid: v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) },
+  accent: { def: DEFAULT_ACCENT, valid: v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) },
   glass: { def: true, valid: bool },
   reduceMotion: { def: false, valid: bool },
   wallpaper: { def: 'oled', valid: v => WALLPAPERS.some(w => w.id === v) },
@@ -622,10 +699,14 @@ const Settings = {
       const v = saved && typeof saved === 'object' ? saved[k] : undefined;
       this.values[k] = v !== undefined && s.valid(v) ? v : s.def;
     }
-    // One-time move to the OLED look for settings saved by version 1.
-    if (Store.get('settingsVersion', 1) < 2) {
-      if (saved && Object.keys(saved).length) { this.values.theme = 'dark'; this.values.wallpaper = 'oled'; Store.set('settings', this.values); }
-      Store.set('settingsVersion', 2);
+    const ver = Store.get('settingsVersion', 1);
+    // v2: one-time move to the OLED look for settings saved by version 1.
+    if (ver < 2 && saved && Object.keys(saved).length) { this.values.theme = 'dark'; this.values.wallpaper = 'oled'; }
+    // v3 (NyxOS): people still on the old default accent get the new moonlight default.
+    if (ver < 3 && this.values.accent.toLowerCase() === '#7aa2ff') this.values.accent = DEFAULT_ACCENT;
+    if (ver < 3) {
+      if (saved && Object.keys(saved).length) Store.set('settings', this.values);
+      Store.set('settingsVersion', 3);
     }
   },
   get(k) { return this.values[k]; },
@@ -670,7 +751,7 @@ const Settings = {
 const darkMq = matchMedia('(prefers-color-scheme: dark)');
 function onAccent(hex) {
   const n = parseInt(hex.slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
-  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#0d1426' : '#ffffff';
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#0b0f1c' : '#ffffff';
 }
 function applyAppearance() {
   const root = document.documentElement;
@@ -1202,7 +1283,7 @@ registerApp({
       form.addEventListener('submit', ctx.guard(e => { e.preventDefault(); const p = parseInput(q.value); if (p) navigate(tab, p); }));
       const recent = Settings.get('saveHistory') ? History.list().slice(0, 6) : [];
       return h('div', { class: 'ntp' },
-        h('h1', null, h('span', { svg: ICONS.logo }), 'secretly-not-a-proxy'),
+        h('h1', null, h('span', { svg: MARK }), h('span', { class: 'wordmark' }, h('span', { class: 'wm-nyx', text: 'Nyx' }), h('span', { class: 'wm-os', text: 'OS' }))),
         form,
         recent.length ? h('div', { class: 'recent' }, h('h2', { text: 'Recently visited' }),
           recent.map(r => h('button', { onclick: ctx.guard(() => navigate(tab, { kind: 'web', url: r.url })) },
@@ -1362,7 +1443,7 @@ registerApp({
           else { msg.textContent = 'Pop-ups are blocked. Allow pop-ups for this site, then try again.'; msg.className = 'msg err'; }
         } });
         return [
-          h('h2', { text: 'Launch' }), h('p', { class: 'lede', text: 'Run this site inside an about:blank tab, so its real address doesn\u2019t show in that tab\u2019s address bar.' }),
+          h('h2', { text: 'Launch' }), h('p', { class: 'lede', text: 'Run NyxOS inside an about:blank tab, so its real address doesn\u2019t show in that tab\u2019s address bar.' }),
           group(null,
             h('div', { class: 'srow' }, lbl('Open in about:blank', Launch.framed ? 'Already running inside an about:blank tab or another page.' : 'Opens a new tab at about:blank with this site filling it. Your browser may ask you to allow pop-ups.'),
               h('div', { class: 'row' }, msg, openBtn)),
@@ -1394,8 +1475,8 @@ registerApp({
           r.readAsText(f);
         });
         const exportSettings = () => {
-          const blob = new Blob([JSON.stringify({ app: 'secretly-not-a-proxy', version: 1, settings: Settings.values }, null, 2)], { type: 'application/json' });
-          const a = h('a', { href: URL.createObjectURL(blob), download: 'secretly-not-a-proxy-settings.json' });
+          const blob = new Blob([JSON.stringify({ app: 'NyxOS', version: 1, settings: Settings.values }, null, 2)], { type: 'application/json' });
+          const a = h('a', { href: URL.createObjectURL(blob), download: 'nyxos-settings.json' });
           document.body.append(a); a.click(); a.remove();
           setTimeout(() => URL.revokeObjectURL(a.href), 1000);
           msg.textContent = 'Settings exported.'; msg.className = 'msg ok';
@@ -1412,9 +1493,9 @@ registerApp({
         ];
       } },
       { id: 'about', name: 'About', icon: ICONS.info, render: () => [
-        h('div', { class: 'about-mark' }, h('span', { svg: ICONS.logo }), h('div', null, h('b', { text: 'secretly-not-a-proxy' }), h('small', { text: 'Version 0.1.0' }))),
-        h('p', { text: 'A desktop-style web environment with a tabbed browser and settings. It runs entirely in your browser from a single page, with no server and no service worker.' }),
-        h('p', null, 'The interface takes inspiration from ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. This build is written from scratch and contains no GalaxyV7 code.'),
+        h('div', { class: 'about-mark' }, h('span', { svg: MARK }), h('div', null, h('b', { class: 'wordmark' }, h('span', { class: 'wm-nyx', text: 'Nyx' }), h('span', { class: 'wm-os', text: 'OS' })), h('small', { text: 'Version 1.0.0' }))),
+        h('p', { text: 'NyxOS is a desktop-style web environment named for Nyx, the Greek goddess of night. It runs entirely in your browser as a static site, with no server of its own and no service worker.' }),
+        h('p', null, 'Inspired by ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. NyxOS is written from scratch and contains no GalaxyV7 code.'),
         h('p', { text: 'Home screen shortcuts open in the browser. YouTube and TikTok refuse to be shown inside other pages, so in Direct mode use Open in new tab for those.' }),
         h('p', { text: 'In Direct mode the browser embeds pages as they are. It is not a proxy, and sites that block embedding will not display. A proxy server you run can be connected in Settings › Browser.' }),
       ] },
@@ -1505,7 +1586,7 @@ const Dots = (() => {
   const lowPower = coarse && ((navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 2);
   let W = 0, H = 0, dpr = 1, S = 26, n = 0, xs = null, ys = null, lift = null;
   let px = -1e5, py = -1e5, strength = 0, target = 0, running = false, raf = 0;
-  let enabled = false, motion = false, accent = '#7aa2ff';
+  let enabled = false, motion = false, accent = DEFAULT_ACCENT;
 
   function layout() {
     if (!ctx) return;
@@ -1873,8 +1954,8 @@ renderNotifs();
 startClock();
 try { Dots.configure(); } catch (e) { console.error('Dot field disabled:', e); }
 Mode.set(Store.get('mode', 'os') === 'browser' ? 'browser' : 'os', { save: false });
-// Extension point for later apps: window.SNAP.registerApp({...})
-window.SNAP = Object.freeze({ registerApp, registerShortcut, mode: m => Mode.set(m), open: (id, a) => WM.open(id, a), notify: (t, b) => Notify.push({ title: t, body: b }), net: BrowserNet, settings: { get: k => Settings.get(k) } });
+// Extension point for later apps: window.Nyx.registerApp({...}) (window.SNAP still works)
+window.Nyx = window.SNAP = Object.freeze({ registerApp, registerShortcut, mode: m => Mode.set(m), open: (id, a) => WM.open(id, a), notify: (t, b) => Notify.push({ title: t, body: b }), net: BrowserNet, settings: { get: k => Settings.get(k) } });
 booted = true;
 clearTimeout(watchdog);
 document.getElementById('boot').classList.add('done');
