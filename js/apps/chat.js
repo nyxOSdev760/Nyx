@@ -8,6 +8,7 @@ import { registerApp } from '../apps.js';
 import { Account, MIN_PASSWORD } from '../account.js';
 import { extraSections } from './settings.js';
 import { WM } from '../wm.js';
+import { Voice, MAX_PEOPLE } from '../voice.js';
 
 export const MAX_LEN = 500;
 const PAGE = 50;
@@ -217,7 +218,49 @@ registerApp({
       const banned = h('div', { class: 'chat-banned', hidden: true }, h('span', { svg: ICONS.ban }), h('span', { text: 'You’ve been banned from posting in Chat. You can still read along.' }));
       el.replaceChildren(head, voicePanel, h('div', { class: 'chat-body' }, list, jump), banned, form);
 
+      /* Voice: a header button, and a panel while you're in the room. */
+      const voiceBtn = h('button', { class: 'btn sm', type: 'button', onclick: () => { if (Voice.state === 'idle') Voice.join(); } });
+      voiceSlot.append(voiceBtn);
+      function renderVoice() {
+        const people = Voice.present();
+        const n = people.length;
+        const inRoom = Voice.state !== 'idle';
+        voiceBtn.hidden = inRoom;
+        voiceBtn.disabled = Account.banned;
+        voiceBtn.replaceChildren(h('span', { svg: ICONS.headphones }), n ? `Voice · ${n}` : 'Voice');
+        voiceBtn.setAttribute('aria-label', n ? `Join voice, ${n} ${n === 1 ? 'person' : 'people'} in it` : 'Join voice');
+        if (!inRoom) {
+          voicePanel.replaceChildren(...(Voice.error ? [h('div', { class: 'vc-top' }, h('span', { class: 'vc-msg err', role: 'alert', text: Voice.error }), h('div', { class: 'vc-actions' }, h('button', { class: 'icon-btn sm', type: 'button', 'aria-label': 'Dismiss', svg: ICONS.close, onclick: () => { Voice.error = ''; renderVoice(); } })))] : []));
+          return;
+        }
+        const joining = Voice.state === 'joining';
+        const all = joining ? [] : people;
+        const meIn = all.some(p => p.uid === me.uid);
+        const list = meIn ? all : all.concat(joining ? [] : [{ uid: me.uid, name: me.name, muted: Voice.muted }]);
+        voicePanel.replaceChildren(...[
+          h('div', { class: 'vc-top' }, h('span', { class: 'vc-live', 'aria-hidden': 'true' }), h('b', { text: 'Voice' }),
+            h('span', { class: 'tnum', text: joining ? 'Joining…' : `${list.length} of ${MAX_PEOPLE}` }),
+            h('div', { class: 'vc-actions' },
+              h('button', { class: 'btn sm' + (Voice.muted ? ' vc-on' : ''), type: 'button', 'aria-pressed': String(Voice.muted), disabled: joining, onclick: () => Voice.setMuted(!Voice.muted) }, h('span', { svg: Voice.muted ? ICONS.micOff : ICONS.mic }), Voice.muted ? 'Unmute' : 'Mute'),
+              h('button', { class: 'btn sm vc-leave', type: 'button', onclick: () => Voice.leave() }, h('span', { svg: ICONS.phoneOff }), 'Leave'))),
+          joining ? h('p', { class: 'vc-msg', text: 'Asking for your microphone…' }) :
+          h('div', { class: 'vc-people', role: 'list', 'aria-label': 'People in voice' }, list.map(p => {
+            const self = p.uid === me.uid, c = Voice.conns.get(p.uid);
+            const st = self ? (Voice.muted ? 'Muted' : 'You') : !c ? 'Connecting…' : c.state === 'connected' ? (p.muted ? 'Muted' : 'Connected') : c.state === 'failed' ? 'Couldn’t connect' : 'Connecting…';
+            const speaking = Voice.speaking.has(p.uid) && !(self ? Voice.muted : p.muted);
+            const av = avatarFor(p.uid, p.name, 'lg');
+            if (self ? Voice.muted : p.muted) av.append(h('span', { class: 'vc-mic', svg: ICONS.micOff }));
+            return h('div', { class: 'vc-p' + (speaking ? ' speaking' : '') + (c && c.state === 'failed' ? ' failed' : ''), role: 'listitem', 'aria-label': `${p.name}: ${st}${speaking ? ', speaking' : ''}`, 'data-uid': p.uid, 'data-state': self ? 'self' : (c ? c.state : 'none') },
+              av, h('span', { class: 'vc-name', text: self ? `${p.name} (you)` : p.name }), h('span', { class: 'vc-state', text: st }));
+          })),
+          Voice.error ? h('p', { class: 'vc-msg err', role: 'alert', text: Voice.error }) : null].filter(Boolean));
+      }
+      Voice.watchRoom();
+      const offV = Bus.on('voice', renderVoice);
+      renderVoice();
+
       const renderHead = () => {
+        renderVoice();
         if (Account.user && Account.user.uid === me.uid) me.name = Account.user.name;
         meBtn.querySelector('.chat-me-name').textContent = me.name;
         meBtn.querySelector('.avatar').textContent = initials(me.name);
@@ -250,8 +293,8 @@ registerApp({
         }
         if (!all.length) frag.push(h('div', { class: 'chat-empty' }, h('div', { class: 'chat-screen-ico', svg: ICONS.chat }), h('b', { text: 'No messages yet' }), h('p', { text: 'Say hi. You’re first.' })));
         items.replaceChildren(...frag);
-        top.replaceChildren(hasMore ? (loadingOlder ? h('div', { class: 'chat-older' }, h('span', { class: 'spinner' }), 'Loading older messages…') : h('div', { class: 'chat-older' }, 'Scroll up for older messages'))
-          : all.length ? h('div', { class: 'chat-start' }, h('b', { text: 'Welcome to #lobby' }), h('p', { text: 'This is the start of the room.' })) : null);
+        top.replaceChildren(...[hasMore ? (loadingOlder ? h('div', { class: 'chat-older' }, h('span', { class: 'spinner' }), 'Loading older messages…') : h('div', { class: 'chat-older' }, 'Scroll up for older messages'))
+          : all.length ? h('div', { class: 'chat-start' }, h('b', { text: 'Welcome to #lobby' }), h('p', { text: 'This is the start of the room.' })) : null].filter(Boolean));
       }
       const atBottom = () => list.scrollHeight - list.scrollTop - list.clientHeight < 80;
       function toBottom(smooth) { list.scrollTo({ top: list.scrollHeight, behavior: smooth && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'auto' }); unseen = 0; jump.hidden = true; }
@@ -436,10 +479,9 @@ registerApp({
       const dayTimer = setInterval(() => { if (room) rerender(0); }, 60000);
 
       room = {
-        uid: me.uid, renderHead, voiceSlot, voicePanel,
-        stop() { unsubs.forEach(u => { try { u(); } catch {} }); offB(); clearInterval(dayTimer); clearTimeout(cdTimer); Bus.emit('chat-room', null); },
+        uid: me.uid, renderHead,
+        stop() { unsubs.forEach(u => { try { u(); } catch {} }); offB(); offV(); clearInterval(dayTimer); clearTimeout(cdTimer); Voice.leave(); Voice.unwatchRoom(); },
       };
-      Bus.emit('chat-room', room);
     }
 
     off.push(Bus.on('account', render));

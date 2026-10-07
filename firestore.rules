@@ -113,6 +113,38 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // Voice room: presence (with a heartbeat) and WebRTC signaling.
+    // Audio itself goes peer to peer and is never stored.
+    match /voice/{room}/peers/{userId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && room == 'lobby' && userId == me() && !isBanned()
+        && request.resource.data.keys().hasOnly(['name', 'session', 'joinedAt', 'seen', 'muted'])
+        && isMyName(request.resource.data.name)
+        && request.resource.data.session is string && request.resource.data.session.size() <= 40
+        && request.resource.data.muted is bool
+        && request.resource.data.joinedAt is timestamp
+        && request.resource.data.seen == request.time;
+      // You can always leave; anyone can clear someone who stopped checking in.
+      allow delete: if signedIn()
+        && (userId == me() || isAdmin() || resource.data.seen < request.time - duration.value(60, 's'));
+    }
+    match /voice/{room}/signals/{signalId} {
+      allow read: if signedIn() && (resource.data.to == me() || resource.data.from == me());
+      allow create: if signedIn() && room == 'lobby' && !isBanned()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'session', 'toSession', 'type', 'seq', 'sdp', 'cand', 'createdAt'])
+        && request.resource.data.from == me()
+        && request.resource.data.to is string && request.resource.data.to != me()
+        && request.resource.data.type in ['offer', 'answer', 'ice']
+        && request.resource.data.session is string && request.resource.data.session.size() <= 40
+        && request.resource.data.toSession is string && request.resource.data.toSession.size() <= 40
+        && request.resource.data.seq is int
+        && (!('sdp' in request.resource.data) || (request.resource.data.sdp is string && request.resource.data.sdp.size() <= 20000))
+        && (!('cand' in request.resource.data) || request.resource.data.cand is map)
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && (resource.data.to == me() || resource.data.from == me());
+      allow update: if false;
+    }
+
     match /bans/{userId} {
       allow get: if signedIn() && (userId == me() || isAdmin());
       allow list: if isAdmin();
