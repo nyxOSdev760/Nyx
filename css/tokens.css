@@ -1,0 +1,60 @@
+/* NyxOS design tokens.
+   Base is pure black. Three near-black surfaces, hairline borders, one accent
+   used sparingly. Spacing is on a 4/8px scale. Motion is short and springy. */
+:root{
+  --font-ui:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-display:'Instrument Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
+  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-pill:999px;
+  --fs-xs:11px; --fs-sm:12px; --fs-md:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px; --fs-3xl:44px;
+
+  /* Springy for transforms (slight overshoot), plain ease-out for fades. */
+  --ease-spring:cubic-bezier(.3,1.35,.55,1);
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --ease-in:cubic-bezier(.55,0,.8,.2);
+  --dur-1:150ms; --dur-2:200ms; --dur-3:250ms;
+
+  --accent:#9db4ff; --on-accent:#0b0f1c;
+  --accent-soft:color-mix(in srgb,var(--accent) 13%,transparent);
+  --accent-line:color-mix(in srgb,var(--accent) 42%,transparent);
+
+  --dock-h:56px;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px); --safe-r:env(safe-area-inset-right,0px);
+}
+:root[data-theme="dark"]{
+  --bg:#000;
+  --s1:#0a0a0b;   /* windows, panels */
+  --s2:#111113;   /* raised controls, cards */
+  --s3:#19191c;   /* hover, pressed */
+  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.11); --line-3:rgba(255,255,255,.18);
+  --hover:rgba(255,255,255,.05); --press:rgba(255,255,255,.085);
+  --text:#ececee; --text-2:#9d9da6; --text-3:#65656e;
+  --field:#0c0c0e;
+  --glass:rgba(12,12,14,.72);
+  --shadow-1:0 1px 2px rgba(0,0,0,.6);
+  --shadow-2:0 10px 30px rgba(0,0,0,.6);
+  --shadow-3:0 28px 80px rgba(0,0,0,.75),0 2px 8px rgba(0,0,0,.5);
+  --danger:#ff7b7b; --ok:#7ed6a7; --warn:#efc46b;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f2f2f4;
+  --s1:#ffffff; --s2:#f6f6f8; --s3:#ececef;
+  --line:rgba(12,14,22,.08); --line-2:rgba(12,14,22,.12); --line-3:rgba(12,14,22,.2);
+  --hover:rgba(12,14,22,.045); --press:rgba(12,14,22,.08);
+  --text:#16171c; --text-2:#5b5d68; --text-3:#8b8d98;
+  --field:#ffffff;
+  --glass:rgba(255,255,255,.78);
+  --shadow-1:0 1px 2px rgba(12,14,22,.08);
+  --shadow-2:0 10px 30px rgba(12,14,22,.12);
+  --shadow-3:0 28px 70px rgba(12,14,22,.18),0 2px 8px rgba(12,14,22,.08);
+  --danger:#d63c3c; --ok:#1d8f5f; --warn:#a86b00;
+  color-scheme:light;
+}
+
+/* Reduced motion: OS setting or the in-app toggle. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
