@@ -202,6 +202,7 @@ body.mode-browser .win[data-app="browser"] .titlebar,body.mode-browser .win[data
 #launch-prompt p{margin:2px 0 0;color:var(--text-2);font-size:var(--fs-md)}
 #launch-prompt p.msg{margin-top:var(--sp-2)}
 #launch-prompt .row{justify-content:flex-end}
+#launch-prompt.out{opacity:0;transform:translateY(8px);transition:opacity var(--dur-1) var(--ease-in),transform var(--dur-1) var(--ease-in)}
 
 /* ---------- Phones ---------- */
 @media (max-width:720px){

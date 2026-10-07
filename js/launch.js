@@ -1,5 +1,6 @@
 /* Open NyxOS inside an about:blank tab, and the optional prompt on load. */
 import { $, h } from './core.js';
+import { ICONS } from './icons.js';
 import { Settings } from './settings.js';
 import { Notify } from './notify.js';
 
@@ -17,7 +18,7 @@ export const Launch = {
     let w = null;
     try { w = window.open('about:blank', '_blank'); } catch {}
     if (!w || w.closed) {
-      Notify.push({ title: 'Pop-up blocked', body: 'Your browser stopped the new tab. Click the blocked pop-up icon in the address bar (or open site settings), choose to always allow pop-ups for this site, then try again.' });
+      Notify.push({ title: 'Pop-up blocked', body: 'Your browser stopped the new tab. Click the blocked pop-up icon at the right end of the address bar (Chrome, Edge) or the bar under it (Firefox), choose “Always allow pop-ups” for this site, then try again. In Safari: Settings › Websites › Pop-up Windows › Allow.' });
       return false;
     }
     try {
@@ -53,17 +54,18 @@ export const Launch = {
 export function showLaunchPrompt() {
   if (Launch.framed || !Settings.get('askLaunch') || $('#launch-prompt')) return;
   const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
-  const close = () => card.remove();
-  const openBtn = h('button', { class: 'btn primary', type: 'button', text: 'Open in about:blank', onclick: () => {
+  const close = () => { card.classList.add('out'); setTimeout(() => card.remove(), 160); };
+  const openBtn = h('button', { class: 'btn primary', type: 'button', onclick: () => {
     if (Launch.open()) close();
     else { msg.textContent = 'Pop-ups are blocked. Allow pop-ups for this site, then try again.'; msg.className = 'msg err'; }
-  } });
-  const card = h('div', { id: 'launch-prompt', class: 'glass', role: 'dialog', 'aria-labelledby': 'lp-title', 'aria-describedby': 'lp-desc' },
-    h('div', null, h('b', { id: 'lp-title', text: 'Open in about:blank?' }),
-      h('p', { id: 'lp-desc', text: 'Runs this site in a new tab whose address bar shows about:blank. Turn this prompt off in Settings › Launch.' }), msg),
-    h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', text: 'Not now', onclick: close }), openBtn));
+  } }, h('span', { svg: ICONS.external }), 'Open in about:blank');
+  const card = h('div', { id: 'launch-prompt', role: 'dialog', 'aria-labelledby': 'lp-title', 'aria-describedby': 'lp-desc' },
+    h('span', { class: 'lp-ico', svg: ICONS.window }),
+    h('div', { class: 'lp-main' },
+      h('div', null, h('b', { id: 'lp-title', text: 'Open in about:blank?' }),
+        h('p', { id: 'lp-desc', text: 'Runs NyxOS in a new tab whose address bar shows about:blank. You can turn this off in Settings › Launch.' }), msg),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', text: 'Not now', onclick: close }), openBtn)));
   card.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   document.body.append(card);
   openBtn.focus({ preventScroll: true });
 }
-
