@@ -249,11 +249,12 @@ registerApp({
     // Redraw when settings change in bulk (import, reset) or the connection mode changes its description.
     const off = Bus.on('settings', ({ key }) => { if (key === '*' || key === 'transport') show(current); });
     const offA = Bus.on('account', () => { if (current === 'account') show(current); });
+    const offB = Bus.on('blocks', () => { if (current === 'account') show(current); });
     show(current);
     if (startList) { mobileList = true; shell.classList.add('list'); drawNav(); }
     return {
       handleArgs: a => { if (a && a.page && SECTIONS.some(s => s.id === a.page)) show(a.page); },
-      destroy: () => { off(); offA(); cleanups.splice(0).forEach(f => { try { f(); } catch {} }); },
+      destroy: () => { off(); offA(); offB(); cleanups.splice(0).forEach(f => { try { f(); } catch {} }); },
     };
   },
 });

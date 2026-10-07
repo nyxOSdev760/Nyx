@@ -12,6 +12,8 @@ import { Customize } from './customize.js';
 import { showLaunchPrompt } from './launch.js';
 import './apps/browser.js';
 import './apps/settings.js';
+import './apps/chat.js';
+import { Account } from './account.js';
 
 const boot = window.NyxBoot || { done() {}, fatal(e) { throw e; } };
 
@@ -57,6 +59,8 @@ try {
   });
   state.booted = true;
   boot.done();
+  // Restore a signed-in session in the background; never blocks the desktop.
+  setTimeout(() => { try { Account.init(); } catch (e) { console.error(e); } }, 50);
 
   // First run: the customize screen, then (if turned on) the about:blank prompt.
   try {
