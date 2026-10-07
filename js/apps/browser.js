@@ -1,39 +1,54 @@
-/* Browser app: tabs, address bar, new tab page. Pages load through BrowserNet. */
+/* Browser app: pill tabs, a compact toolbar, and the new tab page.
+   Pages load through BrowserNet (settings.js), never by moving NyxOS away. */
 import { h, uid, isHttpUrl, isMobile, Bus } from '../core.js';
-import { ICONS, MARK } from '../icons.js';
+import { ICONS } from '../icons.js';
 import { registerApp } from '../apps.js';
 import { Settings, ENGINES, BrowserNet } from '../settings.js';
-import { History, parseInput, displayUrl, labelFor, hostOf } from '../web.js';
-import { Mode } from '../shell.js';
+import { History, parseInput, displayUrl, labelFor, hostOf, NEWTAB } from '../web.js';
+import { Shortcuts, shortcutTile, favicon } from '../shortcuts.js';
+import { Mode, greeting, fmtTime } from '../shell.js';
+import { Account } from '../account.js';
 
-/* ---------- App: Browser ---------- */
+/* Small favicon for a tab or a recent site; a globe until it loads. */
+function siteIcon(url) {
+  const box = h('span', { class: 'fav', 'aria-hidden': 'true', svg: ICONS.globe });
+  let host = '';
+  try { host = new URL(url).hostname; } catch { return box; }
+  const img = new Image();
+  img.alt = ''; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
+  img.onload = () => { if (img.naturalWidth >= 8) box.replaceChildren(img); };
+  img.src = favicon(host)[0];
+  return box;
+}
+
 registerApp({
-  id: 'browser', name: 'Browser', description: 'Browse the web in tabs', icon: ICONS.globe, tint: '#9db4ff', size: [1040, 680],
+  id: 'browser', name: 'Browser', description: 'Browse the web in tabs', icon: ICONS.globe, tint: '#9db4ff', size: [1080, 700],
   mount(root, ctx) {
     const tabs = [];
     let active = null;
     const off = [];
 
     const tabsEl = h('div', { class: 'br-tabs', role: 'tablist', 'aria-label': 'Tabs' });
-    const newBtn = h('button', { class: 'br-new', 'aria-label': 'New tab', title: 'New tab', svg: ICONS.plus, onclick: ctx.guard(() => newTab()) });
-    const backBtn = h('button', { class: 'ibtn', 'aria-label': 'Back', title: 'Back', svg: ICONS.back, onclick: ctx.guard(() => go(-1)) });
-    const fwdBtn = h('button', { class: 'ibtn', 'aria-label': 'Forward', title: 'Forward', svg: ICONS.fwd, onclick: ctx.guard(() => go(1)) });
-    const reloadBtn = h('button', { class: 'ibtn', 'aria-label': 'Reload', title: 'Reload', svg: ICONS.reload, onclick: ctx.guard(() => reloadOrStop()) });
-    const homeBtn = h('button', { class: 'ibtn opt', 'aria-label': 'Home', title: 'Home', svg: ICONS.home, onclick: ctx.guard(() => goHome()) });
-    const addrIcon = h('span', { svg: ICONS.search });
+    const newBtn = h('button', { class: 'icon-btn sm br-new', type: 'button', 'aria-label': 'New tab', title: 'New tab', svg: ICONS.plus, onclick: ctx.guard(() => newTab()) });
+    const backBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Back', title: 'Back', svg: ICONS.back, onclick: ctx.guard(() => go(-1)) });
+    const fwdBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Forward', title: 'Forward', svg: ICONS.fwd, onclick: ctx.guard(() => go(1)) });
+    const reloadBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Reload', title: 'Reload', svg: ICONS.reload, onclick: ctx.guard(() => reloadOrStop()) });
+    const homeBtn = h('button', { class: 'icon-btn opt', type: 'button', 'aria-label': 'Home', title: 'Home', svg: ICONS.home, onclick: ctx.guard(() => goHome()) });
+    const addrIcon = h('span', { class: 'br-addr-ico', svg: ICONS.search });
     const addr = h('input', { type: 'text', inputmode: 'url', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Address or search', placeholder: 'Search or enter address', enterkeyhint: 'go' });
     const addrForm = h('form', { class: 'br-addr', role: 'search' }, addrIcon, addr);
-    const extBtn = h('button', { class: 'ibtn', 'aria-label': 'Open in a new browser tab', title: 'Open in a new browser tab', svg: ICONS.external, onclick: ctx.guard(() => openExternal()) });
-    const fsBtn = h('button', { class: 'ibtn opt', 'aria-label': 'Full screen', title: 'Full screen', svg: ICONS.expand, onclick: ctx.guard(() => toggleFs()) });
+    const extBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Open in a new browser tab', title: 'Open in a new browser tab', svg: ICONS.external, onclick: ctx.guard(() => openExternal()) });
+    const fsBtn = h('button', { class: 'icon-btn opt', type: 'button', 'aria-label': 'Full screen', title: 'Full screen', svg: ICONS.expand, onclick: ctx.guard(() => toggleFs()) });
     if (!document.fullscreenEnabled) fsBtn.hidden = true;
+    const progress = h('div', { class: 'br-progress', 'aria-hidden': 'true' }, h('i'));
+    const status = h('span', { class: 'sr', role: 'status', 'aria-live': 'polite' });
     const hint = h('div', { class: 'br-hint', role: 'note' });
-    const progress = h('div', { class: 'br-progress', 'aria-hidden': 'true' });
     const views = h('div', { class: 'br-views' });
 
     root.append(h('div', { class: 'br' },
-      h('div', { class: 'row', style: 'flex-wrap:nowrap;gap:0' }, tabsEl, newBtn),
-      h('div', { class: 'br-bar' }, backBtn, fwdBtn, reloadBtn, homeBtn, addrForm, extBtn, fsBtn),
-      progress, hint, views));
+      h('div', { class: 'br-top' }, tabsEl, newBtn),
+      h('div', { class: 'br-bar' }, h('div', { class: 'br-nav' }, backBtn, fwdBtn, reloadBtn, homeBtn), addrForm, h('div', { class: 'br-nav' }, extBtn, fsBtn), progress),
+      hint, status, views));
 
     addrForm.addEventListener('submit', ctx.guard(e => {
       e.preventDefault();
@@ -50,8 +65,8 @@ registerApp({
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); go(1); }
     }));
 
-    function cur(tab) { return (tab && tab.entries[tab.index]) || 'nyx://newtab'; }
-    function homeUrl() { return Settings.get('homepage') || 'nyx://newtab'; }
+    const cur = (tab) => (tab && tab.entries[tab.index]) || NEWTAB;
+    const homeUrl = () => Settings.get('homepage') || NEWTAB;
 
     function newTab(url, activate = true) {
       const tab = { id: uid(), title: 'New tab', entries: [], index: -1, loading: false, error: null, slow: false, frame: null, view: h('div', { class: 'br-view', role: 'tabpanel', hidden: true }), timer: 0, hintOff: false };
@@ -59,8 +74,8 @@ registerApp({
       tabs.push(tab);
       if (activate) select(tab);
       const p = url ? parseInput(url) : null;
-      navigate(tab, p || { kind: 'internal', url: 'nyx://newtab' });
-      if (activate && cur(tab) === 'nyx://newtab') setTimeout(() => { const q = tab.view.querySelector('input'); if (q && !isMobile()) q.focus(); }, 50);
+      navigate(tab, p || { kind: 'internal', url: NEWTAB });
+      if (activate && cur(tab) === NEWTAB) setTimeout(() => { const q = tab.view.querySelector('input'); if (q && !isMobile()) q.focus(); }, 50);
       return tab;
     }
     function closeTab(tab) {
@@ -93,7 +108,7 @@ registerApp({
       const url = cur(tab);
       clearTimeout(tab.timer);
       tab.error = null; tab.slow = false;
-      if (url === 'nyx://newtab') {
+      if (url === NEWTAB) {
         tab.loading = false; tab.title = 'New tab';
         if (tab.frame) { tab.frame.src = 'about:blank'; tab.frame.remove(); tab.frame = null; }
         renderView(tab); render(); return;
@@ -107,6 +122,7 @@ registerApp({
         tab.frame = h('iframe', {
           title: 'Page content', referrerpolicy: 'no-referrer',
           sandbox: 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads',
+          allow: 'fullscreen; autoplay; encrypted-media; picture-in-picture; clipboard-write',
         });
         const frame = tab.frame;
         frame.addEventListener('load', () => {
@@ -114,6 +130,7 @@ registerApp({
           clearTimeout(tab.timer);
           tab.loading = false; tab.slow = false;
           History.add(cur(tab), tab.title);
+          status.textContent = `${tab.title} loaded`;
           renderView(tab); render();
         });
         frame.addEventListener('error', () => { tab.loading = false; tab.error = { title: "This page couldn't be loaded", detail: 'The connection failed. Check your internet connection and try again.' }; renderView(tab); render(); });
@@ -137,7 +154,7 @@ registerApp({
       if (t.loading && t.frame) { t.frame.src = 'about:blank'; t.loading = false; clearTimeout(t.timer); render(); return; }
       show(t);
     }
-    function goHome() { const u = homeUrl(); navigate(active, u === 'nyx://newtab' ? { kind: 'internal', url: u } : { kind: 'web', url: u }); }
+    function goHome() { const u = homeUrl(); navigate(active, u === NEWTAB ? { kind: 'internal', url: u } : { kind: 'web', url: u }); }
     function openExternal() {
       const u = cur(active);
       if (!isHttpUrl(u)) { ctx.notify('Nothing to open', 'Open a web page first, then use this button to open it in a separate browser tab.'); return; }
@@ -157,36 +174,45 @@ registerApp({
         tab.view.append(h('div', { class: 'err' }, h('div', { class: 'app-error', role: 'alert' },
           h('h2', { text: tab.error.title }), h('p', { text: tab.error.detail }),
           h('div', { class: 'row' },
-            h('button', { class: 'btn primary', text: 'Try again', onclick: ctx.guard(() => show(tab)) }),
-            isHttpUrl(url) ? h('button', { class: 'btn', text: 'Open in new tab', onclick: ctx.guard(openExternal) }) : null))));
+            h('button', { class: 'btn primary', type: 'button', text: 'Try again', onclick: ctx.guard(() => show(tab)) }),
+            isHttpUrl(url) ? h('button', { class: 'btn', type: 'button', text: 'Open in new tab', onclick: ctx.guard(openExternal) }) : null))));
         return;
       }
-      if (url === 'nyx://newtab') { tab.view.append(newTabPage(tab)); return; }
+      if (url === NEWTAB) { tab.view.append(newTabPage(tab)); return; }
       if (tab.frame && !tab.frame.isConnected) tab.view.append(tab.frame);
     }
+
+    /* New tab page: time, greeting, search, shortcuts, recent sites. */
     function newTabPage(tab) {
       const engine = ENGINES[Settings.get('searchEngine')];
-      const q = h('input', { type: 'search', 'aria-label': `Search with ${engine.name} or enter address`, placeholder: `Search ${engine.name} or type an address`, autocomplete: 'off', enterkeyhint: 'go' });
-      const form = h('form', { role: 'search' }, h('label', { class: 'search' }, h('span', { svg: ICONS.search }), q));
+      const q = h('input', { type: 'search', 'aria-label': `Search with ${engine.name} or enter address`, placeholder: `Search ${engine.name} or type an address`, autocomplete: 'off', spellcheck: 'false', enterkeyhint: 'go' });
+      const form = h('form', { role: 'search', class: 'ntp-search' }, h('label', { class: 'search' }, h('span', { svg: ICONS.search }), q, h('span', { class: 'kbd', text: '↵' })));
       form.addEventListener('submit', ctx.guard(e => { e.preventDefault(); const p = parseInput(q.value); if (p) navigate(tab, p); }));
+      const now = new Date();
+      const user = Account.user;
       const recent = Settings.get('saveHistory') ? History.list().slice(0, 6) : [];
-      return h('div', { class: 'ntp' },
-        h('h1', null, h('span', { svg: MARK }), h('span', { class: 'wordmark' }, h('span', { class: 'wm-nyx', text: 'Nyx' }), h('span', { class: 'wm-os', text: 'OS' }))),
-        form,
-        recent.length ? h('div', { class: 'recent' }, h('h2', { text: 'Recently visited' }),
-          recent.map(r => h('button', { onclick: ctx.guard(() => navigate(tab, { kind: 'web', url: r.url })) },
-            h('b', { text: labelFor(r.url) }), h('small', { text: hostOf(r.url) })))) :
-          h('p', { class: 'note', text: Settings.get('saveHistory') ? 'Pages you visit will show up here.' : 'History is off. Turn it on in Settings › Browser to see recent pages here.' }));
+      const tiles = Shortcuts.map(sc => h('button', { class: 'ntp-sc', type: 'button', 'aria-label': `Open ${sc.name}`, onclick: ctx.guard(() => navigate(tab, { kind: 'web', url: sc.url })) }, shortcutTile(sc, 'lg'), h('span', { text: sc.name })));
+      return h('div', { class: 'ntp scroll' },
+        h('div', { class: 'ntp-in' },
+          h('div', { class: 'ntp-time tnum', text: fmtTime(now, false) }),
+          h('h1', { class: 'ntp-greet', text: user ? `${greeting(now)}, ${user.name}.` : `${greeting(now)}.` }),
+          form,
+          tiles.length ? h('section', { class: 'ntp-sec', 'aria-label': 'Shortcuts' }, h('div', { class: 'ntp-scs' }, tiles)) : null,
+          h('section', { class: 'ntp-sec', 'aria-labelledby': `rec-${tab.id}` },
+            h('h2', { id: `rec-${tab.id}`, text: 'Recent' }),
+            recent.length ? h('div', { class: 'ntp-recent' }, recent.map(r => h('button', { type: 'button', class: 'ntp-rec', title: r.url, onclick: ctx.guard(() => navigate(tab, { kind: 'web', url: r.url })) },
+              siteIcon(r.url), h('span', null, h('b', { text: labelFor(r.url) }), h('small', { text: hostOf(r.url) })))))
+              : h('p', { class: 'ntp-note', text: Settings.get('saveHistory') ? 'Sites you visit will show up here.' : 'History is off. Turn it on in Settings › Browser to see recent sites here.' }))));
     }
 
     function render() {
       tabsEl.replaceChildren(...tabs.map(t => {
-        const isA = t === active;
+        const isA = t === active, url = cur(t);
         const lbl = t.error ? 'Error' : t.title;
-        return h('div', { class: 'br-tab' + (isA ? ' active' : '') },
-          t.loading ? h('span', { class: 'spin', 'aria-hidden': 'true' }) : null,
-          h('button', { class: 't', role: 'tab', 'aria-selected': String(isA), title: lbl, text: lbl, onclick: ctx.guard(() => select(t)) }),
-          h('button', { class: 'x', 'aria-label': `Close tab ${lbl}`, title: 'Close tab', svg: ICONS.close, onclick: ctx.guard(e => { e.stopPropagation(); closeTab(t); }) }));
+        return h('div', { class: 'br-tab' + (isA ? ' active' : '') + (t.loading ? ' loading' : '') },
+          t.loading ? h('span', { class: 'spinner', 'aria-hidden': 'true' }) : url === NEWTAB ? h('span', { class: 'fav', 'aria-hidden': 'true', svg: ICONS.sparkle }) : siteIcon(url),
+          h('button', { class: 't', type: 'button', role: 'tab', 'aria-selected': String(isA), title: lbl, text: lbl, onclick: ctx.guard(() => select(t)) }),
+          h('button', { class: 'x', type: 'button', 'aria-label': `Close tab ${lbl}`, title: 'Close tab', svg: ICONS.close, onclick: ctx.guard(e => { e.stopPropagation(); closeTab(t); }) }));
       }));
       const t = active, url = cur(t);
       backBtn.disabled = !t || t.index <= 0;
@@ -197,23 +223,29 @@ registerApp({
       extBtn.disabled = !isHttpUrl(url);
       if (document.activeElement !== addr) addr.value = labelFor(url);
       addrIcon.innerHTML = url && url.startsWith('https://') ? ICONS.lock : ICONS.search;
-      progress.replaceChildren(...(t && t.loading ? [h('i')] : []));
+      // Restart the progress animation for each new load.
+      const loading = !!(t && t.loading);
+      if (loading && !progress.classList.contains('on')) { progress.classList.remove('done'); void progress.offsetWidth; progress.classList.add('on'); }
+      if (!loading && progress.classList.contains('on')) { progress.classList.remove('on'); progress.classList.add('done'); }
       // Honest status bar about what this connection mode can and can't do.
       const direct = Settings.get('transport') === 'direct';
       let msg = null;
       if (t && t.slow) msg = 'This page is taking a long time. It may be blocking being shown inside another page.';
-      else if (t && direct && isHttpUrl(url) && !t.error && Settings.get('embedHint') && !t.hintOff) msg = 'Blank page? Many sites refuse to be shown inside other pages. Direct mode can\u2019t get around that.';
+      else if (t && direct && isHttpUrl(url) && !t.error && Settings.get('embedHint') && !t.hintOff) msg = 'Blank page? Many sites refuse to be shown inside other pages. Direct mode can’t get around that.';
       hint.hidden = !msg;
-      if (msg) hint.replaceChildren(h('span', { text: msg }),
-        h('button', { class: 'btn', text: 'Open in new tab', onclick: ctx.guard(openExternal) }),
-        h('button', { class: 'btn', text: 'Dismiss', onclick: ctx.guard(() => { t.hintOff = true; t.slow = false; render(); }) }));
-      ctx.setTitle(t ? (url === 'nyx://newtab' ? 'Browser' : `${t.title} \u2013 Browser`) : 'Browser');
+      if (msg) hint.replaceChildren(h('span', { class: 'br-hint-ico', svg: ICONS.info }), h('span', { class: 'br-hint-t', text: msg }),
+        h('button', { class: 'btn sm', type: 'button', onclick: ctx.guard(openExternal) }, h('span', { svg: ICONS.external }), 'Open in new tab'),
+        h('button', { class: 'icon-btn sm', type: 'button', 'aria-label': 'Dismiss tip', title: 'Dismiss', svg: ICONS.close, onclick: ctx.guard(() => { t.hintOff = true; t.slow = false; render(); }) }));
+      ctx.setTitle(t ? (url === NEWTAB ? 'Browser' : `${t.title} – Browser`) : 'Browser');
     }
 
+    const refreshNewTabs = () => tabs.filter(t => cur(t) === NEWTAB && !t.error).forEach(renderView);
     off.push(Bus.on('settings', ({ key }) => {
-      if (['searchEngine', 'saveHistory', '*', 'history'].includes(key)) tabs.filter(t => cur(t) === 'nyx://newtab' && !t.error).forEach(renderView);
+      if (['searchEngine', 'saveHistory', '*', 'history', 'clock24'].includes(key)) refreshNewTabs();
       render();
     }));
+    off.push(Bus.on('account', refreshNewTabs));
+    off.push(Bus.on('tick', d => { for (const el of root.querySelectorAll('.ntp-time')) el.textContent = fmtTime(d, false); }));
 
     newTab((ctx.args && ctx.args.url) || (Settings.get('homepage') || undefined));
     return {
@@ -222,4 +254,3 @@ registerApp({
     };
   },
 });
-
