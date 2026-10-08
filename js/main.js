@@ -14,8 +14,10 @@ import { IDB } from './idb.js';
 import { initShell, Mode } from './shell.js';
 import { Customize } from './customize.js';
 import { showLaunchPrompt } from './launch.js';
+import { Widgets } from './widgets.js';
 import './apps/browser.js';
 import './apps/settings.js';
+import './apps/widgets.js';
 import './apps/chat.js';
 import { Account } from './account.js';
 
@@ -37,6 +39,7 @@ try {
   Settings.load();
   applyLook();
   initShell();
+  try { Widgets.init(); } catch (e) { console.error('Widgets disabled:', e); }
 
   /* One canvas (#dots), one render loop: either the interactive dot field or a
      live wallpaper is active, never both. Custom/static wallpapers use neither. */

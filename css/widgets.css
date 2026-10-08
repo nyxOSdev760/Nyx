@@ -1,0 +1,70 @@
+/* Desktop widgets layer and the three widgets. */
+#widgets{position:absolute;inset:0;z-index:1;pointer-events:none}
+#widgets:empty{display:none}
+.widget{position:absolute;pointer-events:auto;min-width:160px;border-radius:var(--r-win);background:var(--glass);border:1px solid var(--line-2);box-shadow:var(--shadow-2),var(--edge);-webkit-backdrop-filter:blur(24px) saturate(1.3);backdrop-filter:blur(24px) saturate(1.3);overflow:hidden;animation:wgIn var(--dur-3) var(--ease-spring)}
+:root[data-glass="off"] .widget{background:var(--s1);-webkit-backdrop-filter:none;backdrop-filter:none}
+@keyframes wgIn{from{opacity:0;transform:scale(.94)}}
+.widget.dragging{box-shadow:var(--shadow-3),var(--edge);cursor:grabbing;opacity:.97}
+.widget:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wg-grip{position:absolute;inset:0 0 auto 0;height:22px;cursor:grab}
+.widget.dragging .wg-grip{cursor:grabbing}
+.wg-x{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--text-2);background:var(--s3);opacity:0;transition:opacity var(--dur-1) var(--ease-out),background var(--dur-1) var(--ease-out);z-index:2}
+.wg-x .ico{width:13px;height:13px}
+.widget:hover .wg-x,.widget:focus-within .wg-x{opacity:1}
+.wg-x:hover{background:#d84a4f;color:#fff}
+.wg-body{padding:var(--sp-4)}
+body[data-wall="mist"] .widget{color:#16171c}
+
+/* Clock */
+.wg-clock{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:110px}
+.wg-time{font-family:var(--font-display);font-size:48px;line-height:1;letter-spacing:-.01em;color:var(--text)}
+.wg-date{color:var(--text-2);font-size:var(--fs-md)}
+
+/* Calendar */
+.wg-cal{width:280px}
+.wg-cal-head{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.wg-cal-head b{flex:1;text-align:center;font-size:var(--fs-md);font-weight:600}
+.wg-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.wg-dow{font-size:var(--fs-xs);color:var(--text-3);text-align:center;padding-bottom:4px;font-weight:600}
+.wg-day{aspect-ratio:1;display:grid;place-items:center;font-size:var(--fs-sm);color:var(--text-2);border-radius:var(--r-sm);font-variant-numeric:tabular-nums}
+.wg-day.out{color:transparent}
+.wg-day.today{background:var(--accent);color:var(--on-accent);font-weight:600}
+
+/* Weather */
+.wg-weather{min-width:200px}
+.wg-wx-main,.wg-wx-search{display:flex;flex-direction:column;gap:var(--sp-2)}
+.wg-wx-top{display:flex;align-items:center;gap:var(--sp-2)}
+.wg-wx-ico{color:var(--accent)}.wg-wx-ico .ico{width:34px;height:34px;stroke-width:1.5}
+.wg-wx-temp{font-size:40px;font-weight:500;line-height:1;color:var(--text);letter-spacing:-.02em}
+.wg-wx-edit{margin-left:auto}
+.wg-wx-label{color:var(--text);font-weight:500}
+.wg-wx-city{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);color:var(--text-2);font-size:var(--fs-sm)}
+.wg-wx-unit{color:var(--text-2);font-weight:600;padding:2px 6px;border-radius:var(--r-xs)}
+.wg-wx-unit:hover{background:var(--hover);color:var(--text)}
+.wg-wx-empty,.wg-wx-load{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2);color:var(--text-2);font-size:var(--fs-md)}
+.wg-wx-load{flex-direction:row;align-items:center}
+.wg-wx-results{display:flex;flex-direction:column;max-height:140px;overflow:auto}
+.wg-wx-row{display:flex;flex-direction:column;align-items:flex-start;padding:var(--sp-2);border-radius:var(--r-sm);text-align:left}
+.wg-wx-row:hover{background:var(--hover)}
+.wg-wx-row small{color:var(--text-3);font-size:var(--fs-xs)}
+
+/* Widgets picker app */
+.wgpick-wrap{height:100%;overflow:auto}
+.wgpick{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4)}
+.wgpick-row{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);background:var(--s2)}
+.wgpick-ico{width:40px;height:40px;border-radius:var(--r-ctl);display:grid;place-items:center;background:var(--s3);color:var(--accent);flex:none}
+.wgpick-ico .ico{width:22px;height:22px}
+.wgpick-main{flex:1}.wgpick-main b{font-weight:500}
+
+/* Phones: widgets stack in a column below the clock, above the icon grid.
+   Widgets.init measures the stack into --wg-h so the icons shift down. */
+@media (max-width:720px){
+  #widgets{position:absolute;inset:auto var(--sp-4) auto var(--sp-4);top:calc(150px + var(--safe-t));display:flex;flex-direction:column;gap:var(--sp-3);z-index:1}
+  #widgets:empty{display:none}
+  body.has-win #widgets,body.has-win.has-widgets #icons{visibility:hidden}
+  body.has-widgets #icons{top:calc(150px + var(--wg-h,0px) + var(--sp-4) + var(--safe-t))}
+  .widget{position:static!important;width:100%;animation:none}
+  .wg-grip{display:none}
+  .wg-x{opacity:1}
+  .wg-time{font-size:40px}
+}
