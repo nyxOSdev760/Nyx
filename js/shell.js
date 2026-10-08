@@ -48,9 +48,28 @@ function dockClick(appId) {
   const wins = [...WM.wins.values()].filter(w => w.appId === appId);
   if (!wins.length) { WM.open(appId); return; }
   const top = wins.sort((a, b) => b.el.style.zIndex - a.el.style.zIndex)[0];
-  if (top.minimized) WM.restore(top.id);
+  if (top.minimized || !WM.onCurrent(top)) WM.restore(top.id);
   else if (WM.focusedId === top.id) WM.minimize(top.id);
   else WM.focus(top.id);
+}
+export function renderDesktops() {
+  const host = $('#desktops');
+  if (!host) return;
+  document.body.toggleAttribute('data-multi-desk', WM.desktopCount > 1);
+  const pills = [];
+  // Number pills only when there's more than one desktop; the + is always shown.
+  if (WM.desktopCount > 1) for (let i = 0; i < WM.desktopCount; i++) {
+    const p = h('button', { class: 'desk-pill' + (i === WM.desktop ? ' active' : ''), type: 'button', 'aria-label': `Desktop ${i + 1}` + (i === WM.desktop ? ', current' : ''), 'aria-pressed': String(i === WM.desktop), text: String(i + 1), onclick: () => WM.setDesktop(i) });
+    // Right-click / long-press removes a desktop (keeps at least one).
+    p.addEventListener('contextmenu', e => { e.preventDefault(); if (WM.desktopCount > 1) WM.removeDesktop(i); });
+    let lp = 0;
+    p.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') lp = setTimeout(() => { if (WM.desktopCount > 1) WM.removeDesktop(i); }, 600); });
+    p.addEventListener('pointerup', () => clearTimeout(lp));
+    p.addEventListener('pointercancel', () => clearTimeout(lp));
+    pills.push(p);
+  }
+  if (WM.desktopCount < WM.MAX_DESKTOPS) pills.push(h('button', { class: 'desk-pill add', type: 'button', 'aria-label': 'Add desktop', title: 'Add desktop', svg: ICONS.plus, onclick: () => WM.addDesktop() }));
+  host.replaceChildren(...pills);
 }
 function dockItem(app) {
   const wins = [...WM.wins.values()].filter(w => w.appId === app.id);
@@ -217,9 +236,18 @@ export function initShell() {
     if (n) n.focus(); else if (e.key === 'ArrowUp') $('#launcher-q').focus();
   });
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    const open = PANELS.find(([p]) => !$(p).hidden);
-    if (open) { togglePanel(open[0], false); $(open[1]).focus(); }
+    if (e.key === 'Escape') {
+      const open = PANELS.find(([p]) => !$(p).hidden);
+      if (open) { togglePanel(open[0], false); $(open[1]).focus(); }
+      return;
+    }
+    // Desktop switching: Ctrl+Alt+Arrows (move between) and Ctrl+Alt+1..4 (jump).
+    // Chosen to avoid the browser's own Ctrl+number / Alt+Arrow shortcuts.
+    if (e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); WM.setDesktop(Math.min(WM.desktop + 1, WM.desktopCount - 1)); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); WM.setDesktop(Math.max(WM.desktop - 1, 0)); }
+      else if (/^[1-4]$/.test(e.key)) { const i = +e.key - 1; if (i < WM.desktopCount) { e.preventDefault(); WM.setDesktop(i); } }
+    }
   });
   document.addEventListener('pointerdown', e => {
     if (!e.target.closest('.panel,#launcher-btn,#bell-btn,#avatar-btn')) closePanels();
@@ -227,6 +255,7 @@ export function initShell() {
   });
 
   Bus.on('wm', renderDock);
+  Bus.on('desktops', () => { renderDesktops(); renderDock(); });
   Bus.on('apps', () => { if (state.booted) { renderIcons(); renderLauncher(); renderDock(); } });
   Bus.on('notify', renderNotifs);
   Bus.on('account', () => { renderAvatar(); if (!$('#account-panel').hidden) renderAccountPanel(); });
@@ -241,6 +270,7 @@ export function initShell() {
   renderIcons();
   renderLauncher();
   renderDock();
+  renderDesktops();
   renderNotifs();
   renderAvatar();
   startClock();

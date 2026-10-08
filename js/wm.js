@@ -1,5 +1,5 @@
 /* Window manager: open/close/focus, drag, resize, edge snapping, minimize to dock. */
-import { $, $$, h, uid, clamp, isMobile, Bus } from './core.js';
+import { $, $$, h, uid, clamp, isMobile, Store, Bus } from './core.js';
 import { ICONS } from './icons.js';
 import { Apps, appTile } from './apps.js';
 import { Notify } from './notify.js';
@@ -10,10 +10,90 @@ const DRAG_SLOP = 4;    // px before a press on the title bar becomes a drag
 
 export const WM = {
   wins: new Map(), z: 10, focusedId: null,
+  desktop: 0, desktopCount: 1, MAX_DESKTOPS: 4,
   /* Set by the shell: hooks keep this module free of shell imports. */
   hooks: { beforeOpen: () => {}, afterClose: () => {}, dockRect: () => null, inBrowserMode: () => false },
   area: () => $('#windows').getBoundingClientRect(),
-  changed() { document.body.classList.toggle('has-win', [...this.wins.values()].some(w => !w.minimized)); Bus.emit('wm'); },
+  onCurrent(win) { return win.desktop === this.desktop; },
+  changed() { document.body.classList.toggle('has-win', [...this.wins.values()].some(w => !w.minimized && this.onCurrent(w))); Bus.emit('wm'); },
+
+  /* ---------- Multiple desktops (up to 4) ---------- */
+  initDesktops() {
+    this.desktopCount = clamp(Store.get('desktopCount', 1) | 0, 1, this.MAX_DESKTOPS) || 1;
+    this.desktop = clamp(Store.get('desktop', 0) | 0, 0, this.desktopCount - 1);
+    document.body.dataset.desktop = this.desktop;
+  },
+  setDesktop(i, { animate = true } = {}) {
+    i = clamp(i | 0, 0, this.desktopCount - 1);
+    if (i === this.desktop) return;
+    const dir = i > this.desktop ? 1 : -1;
+    this.desktop = i;
+    Store.set('desktop', i);
+    document.body.dataset.desktop = i;
+    const layer = $('#windows');
+    if (animate && !motionOff()) {
+      layer.classList.remove('desk-anim');
+      layer.style.transform = `translateX(${dir * 2.5}%)`; layer.style.opacity = '0';
+      requestAnimationFrame(() => { layer.classList.add('desk-anim'); this.applyDesktop(); requestAnimationFrame(() => { layer.style.transform = ''; layer.style.opacity = ''; }); });
+      setTimeout(() => layer.classList.remove('desk-anim'), 260);
+    } else this.applyDesktop();
+    this.focusTop();
+    this.changed();
+    Bus.emit('desktops');
+  },
+  applyDesktop() {
+    for (const w of this.wins.values()) w.el.classList.toggle('off-desk', !this.onCurrent(w));
+  },
+  addDesktop() {
+    if (this.desktopCount >= this.MAX_DESKTOPS) return;
+    this.desktopCount++;
+    Store.set('desktopCount', this.desktopCount);
+    Bus.emit('desktops');
+    this.setDesktop(this.desktopCount - 1);
+  },
+  removeDesktop(i) {
+    if (this.desktopCount <= 1) return;
+    i = clamp(i | 0, 0, this.desktopCount - 1);
+    // Move its windows to the previous desktop, then renumber those above it.
+    for (const w of this.wins.values()) {
+      if (w.desktop === i) w.desktop = Math.max(0, i - 1);
+      else if (w.desktop > i) w.desktop--;
+      w.el.dataset.desktop = w.desktop;
+    }
+    this.desktopCount--;
+    Store.set('desktopCount', this.desktopCount);
+    this.desktop = clamp(this.desktop > i ? this.desktop - 1 : this.desktop, 0, this.desktopCount - 1);
+    Store.set('desktop', this.desktop);
+    document.body.dataset.desktop = this.desktop;
+    this.applyDesktop(); this.focusTop(); this.changed();
+    Bus.emit('desktops');
+  },
+  moveToDesktop(id, i) {
+    const win = this.wins.get(id);
+    if (!win) return;
+    i = clamp(i | 0, 0, this.desktopCount - 1);
+    win.desktop = i; win.el.dataset.desktop = i;
+    if (!this.onCurrent(win)) { win.el.classList.add('off-desk'); this.focusTop(); }
+    this.changed();
+    Bus.emit('desktops');
+  },
+  /* A small menu in the titlebar: move this window to another desktop. */
+  deskMenu(id, anchor) {
+    const win = this.wins.get(id);
+    if (!win) return;
+    $$('.desk-menu').forEach(m => m.remove());
+    const r = anchor.getBoundingClientRect();
+    const rows = [];
+    for (let i = 0; i < this.desktopCount; i++) rows.push(h('button', { type: 'button', role: 'menuitem', 'aria-current': String(i === win.desktop), onclick: () => { this.moveToDesktop(id, i); menu.remove(); if (i !== this.desktop) this.setDesktop(i); } }, h('span', { class: 'desk-dot' }), `Desktop ${i + 1}`, i === win.desktop ? h('span', { class: 'desk-cur', svg: ICONS.check }) : null));
+    if (this.desktopCount < this.MAX_DESKTOPS) rows.push(h('button', { type: 'button', role: 'menuitem', class: 'desk-add', onclick: () => { this.addDesktop(); this.moveToDesktop(id, this.desktopCount - 1); menu.remove(); } }, h('span', { svg: ICONS.plus }), 'New desktop'));
+    const menu = h('div', { class: 'desk-menu', role: 'menu' }, rows);
+    document.body.append(menu);
+    menu.style.top = Math.round(r.bottom + 6) + 'px';
+    menu.style.left = Math.round(Math.min(r.left, innerWidth - menu.offsetWidth - 8)) + 'px';
+    const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('pointerdown', close, true); } };
+    setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+    menu.querySelector('button').focus();
+  },
 
   open(appId, args) {
     const app = Apps.get(appId);
@@ -35,10 +115,12 @@ export const WM = {
 
     const titleEl = h('span', { class: 'win-title', text: app.name });
     const maxBtn = h('button', { class: 'win-btn max', type: 'button', 'aria-label': 'Maximize', title: 'Maximize', svg: ICONS.max });
+    const deskBtn = h('button', { class: 'win-btn deskb', type: 'button', 'aria-label': 'Move to desktop', title: 'Move to desktop', 'aria-haspopup': 'menu', svg: ICONS.move, onclick: (e) => this.deskMenu(id, e.currentTarget) });
     const titlebar = h('header', { class: 'titlebar' },
       h('button', { class: 'win-home', type: 'button', 'aria-label': 'Back to home screen', onclick: () => this.minimize(id) }, h('span', { svg: ICONS.back }), 'Home'),
       appTile(app, 'sm'), titleEl,
       h('div', { class: 'win-controls' },
+        deskBtn,
         h('button', { class: 'win-btn minb', type: 'button', 'aria-label': 'Minimize', title: 'Minimize', svg: ICONS.min, onclick: () => this.minimize(id) }),
         maxBtn,
         h('button', { class: 'win-btn close', type: 'button', 'aria-label': 'Close', title: 'Close', svg: ICONS.close, onclick: () => this.close(id) })));
@@ -57,7 +139,8 @@ export const WM = {
       }
     } catch {}
 
-    const win = { id, appId, el, body, titleEl, maxBtn, minimized: false, state: 'normal', prev: null, instance: null };
+    const win = { id, appId, el, body, titleEl, maxBtn, minimized: false, state: 'normal', prev: null, instance: null, desktop: this.desktop };
+    el.dataset.desktop = this.desktop;
     this.wins.set(id, win);
     maxBtn.addEventListener('click', () => this.toggleMax(id));
     titlebar.addEventListener('dblclick', e => { if (!e.target.closest('button')) this.toggleMax(id); });
@@ -110,7 +193,7 @@ export const WM = {
     Bus.emit('wm');
   },
   focusTop() {
-    const vis = [...this.wins.values()].filter(w => !w.minimized).sort((a, b) => b.el.style.zIndex - a.el.style.zIndex);
+    const vis = [...this.wins.values()].filter(w => !w.minimized && this.onCurrent(w)).sort((a, b) => b.el.style.zIndex - a.el.style.zIndex);
     if (vis[0]) this.focus(vis[0].id); else { this.focusedId = null; Bus.emit('wm'); }
   },
   close(id) {
@@ -152,6 +235,7 @@ export const WM = {
   restore(id) {
     const win = this.wins.get(id);
     if (!win) return;
+    if (!this.onCurrent(win)) this.setDesktop(win.desktop);
     if (win.minimized) {
       win.minimized = false;
       const el = win.el;

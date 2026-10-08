@@ -104,6 +104,25 @@ body[data-wall="mist"] .dicon .tile{background:#fff;border-color:rgba(12,14,22,.
 .win-btn.close:hover{background:#d84a4f;color:#fff}
 .win-btn .ico{width:16px;height:16px}
 .win-home{display:none}
+.win.off-desk{display:none}
+.win-btn.deskb{display:none}
+body[data-multi-desk] .win-btn.deskb{display:grid}
+#windows.desk-anim{transition:transform var(--dur-3) var(--ease-out),opacity var(--dur-2) var(--ease-out)}
+/* Move-to-desktop menu */
+.desk-menu{position:fixed;z-index:9600;min-width:180px;padding:var(--sp-1);border-radius:var(--r-md);background:var(--s2);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);animation:panelIn var(--dur-1) var(--ease-spring)}
+.desk-menu button{width:100%;display:flex;align-items:center;gap:var(--sp-2);height:34px;padding:0 var(--sp-2);border-radius:var(--r-sm);color:var(--text);font-size:var(--fs-md);text-align:left}
+.desk-menu button:hover,.desk-menu button:focus-visible{background:var(--hover);outline:none}
+.desk-menu .desk-dot{width:8px;height:8px;border-radius:2px;background:var(--line-3);flex:none}
+.desk-menu button[aria-current="true"] .desk-dot{background:var(--accent)}
+.desk-menu .desk-cur{margin-left:auto;color:var(--accent)}.desk-menu .desk-cur .ico{width:15px;height:15px}
+.desk-menu .desk-add{color:var(--text-2)}.desk-menu .desk-add .ico{width:15px;height:15px}
+/* Desktop switcher in the dock */
+#desktops{display:flex;align-items:center;gap:3px;margin-right:var(--sp-1);padding-right:var(--sp-1);border-right:1px solid var(--line-2)}
+.desk-pill{height:26px;min-width:26px;padding:0 8px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--text-3);font-size:var(--fs-sm);font-weight:600;font-variant-numeric:tabular-nums;transition:background var(--dur-1) var(--ease-out),color var(--dur-1) var(--ease-out)}
+.desk-pill:hover{background:var(--hover);color:var(--text-2)}
+.desk-pill.active{background:var(--accent-soft);color:var(--text);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.desk-pill.add{color:var(--text-3)}
+.desk-pill.add .ico{width:16px;height:16px}
 .win-body{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
 .resize{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;z-index:2}
 body.wm-dragging iframe{pointer-events:none}

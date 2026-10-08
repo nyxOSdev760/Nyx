@@ -38,6 +38,7 @@ try {
 try {
   Settings.load();
   applyLook();
+  WM.initDesktops();
   initShell();
   try { Widgets.init(); } catch (e) { console.error('Widgets disabled:', e); }
 
