@@ -71,11 +71,11 @@ body[data-wall="mist"] .dicon .tile{background:#fff;border-color:rgba(12,14,22,.
 #home-head{display:none}
 
 /* ---------- Windows ---------- */
-.win{pointer-events:auto;position:absolute;display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3);overflow:hidden;min-width:320px;min-height:240px;transform-origin:50% 60%;transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-3) var(--ease-spring),border-color var(--dur-2) var(--ease-out)}
+.win{pointer-events:auto;position:absolute;display:flex;flex-direction:column;border-radius:var(--r-win);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);overflow:hidden;min-width:320px;min-height:240px;transform-origin:var(--ox,50%) var(--oy,60%);transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-3) var(--ease-spring),border-color var(--dur-2) var(--ease-out)}
 :root[data-glass="on"] .win{background:color-mix(in srgb,var(--s1) 88%,transparent);-webkit-backdrop-filter:blur(30px) saturate(1.3);backdrop-filter:blur(30px) saturate(1.3)}
 .win.focused{border-color:var(--line-3)}
 .win:not(.focused){box-shadow:var(--shadow-2)}
-.win.opening{opacity:0;transform:translateY(10px) scale(.96)}
+.win.opening{opacity:0;transform:scale(.9)}
 .win.closing{opacity:0;transform:scale(.96);transition:opacity var(--dur-1) var(--ease-in),transform var(--dur-1) var(--ease-in);pointer-events:none}
 .win.genie{transition:opacity var(--dur-3) var(--ease-in),transform var(--dur-3) var(--ease-out);pointer-events:none}
 .win.minimized{display:none}
@@ -100,7 +100,7 @@ body.wm-dragging iframe{pointer-events:none}
 body.wm-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 
 /* ---------- Dock (bottom): mode switch left, apps center, status right ---------- */
-.bar{position:fixed;z-index:9000;bottom:calc(var(--sp-3) + var(--safe-b));height:var(--dock-h);display:flex;align-items:center;border-radius:18px;background:var(--glass);border:1px solid var(--line-2);box-shadow:var(--shadow-2);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4)}
+.bar{position:fixed;z-index:9000;bottom:calc(var(--sp-3) + var(--safe-b));height:var(--dock-h);display:flex;align-items:center;border-radius:18px;background:var(--glass);border:1px solid var(--line-2);box-shadow:var(--shadow-2),var(--edge);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4)}
 :root[data-glass="off"] .bar{background:var(--s1);-webkit-backdrop-filter:none;backdrop-filter:none}
 #mode-btn{left:calc(var(--sp-3) + var(--safe-l));padding:0 var(--sp-4) 0 var(--sp-3);gap:var(--sp-2);font-weight:500;font-size:var(--fs-md);color:var(--text);transition:border-color var(--dur-2) var(--ease-out),transform var(--dur-1) var(--ease-spring)}
 #mode-btn:hover{border-color:var(--accent-line)}
@@ -147,7 +147,7 @@ body.mode-browser .win[data-app="browser"] .titlebar,body.mode-browser .win[data
 @keyframes modeIn{from{opacity:0;transform:scale(.985)}}
 
 /* ---------- Panels: launcher, notifications, account ---------- */
-.panel{position:fixed;z-index:9100;bottom:calc(var(--dock-h) + var(--sp-5) + var(--safe-b));border-radius:var(--r-lg);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3);display:flex;flex-direction:column;max-height:min(560px,calc(100% - var(--dock-h) - 60px));animation:panelIn var(--dur-2) var(--ease-spring);transform-origin:50% 100%}
+.panel{position:fixed;z-index:9100;bottom:calc(var(--dock-h) + var(--sp-5) + var(--safe-b));border-radius:var(--r-lg);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);display:flex;flex-direction:column;max-height:min(560px,calc(100% - var(--dock-h) - 60px));animation:panelIn var(--dur-2) var(--ease-spring);transform-origin:50% 100%}
 :root[data-glass="on"] .panel{background:var(--glass);-webkit-backdrop-filter:blur(30px) saturate(1.4);backdrop-filter:blur(30px) saturate(1.4)}
 @keyframes panelIn{from{opacity:0;transform:translateY(8px) scale(.98)}}
 #launcher{left:50%;width:400px;margin-left:-200px}
@@ -185,7 +185,7 @@ body.mode-browser .win[data-app="browser"] .titlebar,body.mode-browser .win[data
 
 /* ---------- Toasts ---------- */
 #toasts{position:fixed;top:calc(var(--sp-3) + var(--safe-t));right:calc(var(--sp-3) + var(--safe-r));z-index:9500;display:flex;flex-direction:column;gap:var(--sp-2);width:min(360px,calc(100% - 24px));pointer-events:none}
-.toast{pointer-events:auto;display:flex;gap:var(--sp-3);align-items:flex-start;padding:var(--sp-3) var(--sp-2) var(--sp-3) var(--sp-4);border-radius:var(--r-md);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3);animation:toastIn var(--dur-3) var(--ease-spring)}
+.toast{pointer-events:auto;display:flex;gap:var(--sp-3);align-items:flex-start;padding:var(--sp-3) var(--sp-2) var(--sp-3) var(--sp-4);border-radius:var(--r-md);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);animation:toastIn var(--dur-3) var(--ease-spring)}
 :root[data-glass="on"] .toast{background:var(--glass);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
 .toast.out{opacity:0;transform:translateX(12px);transition:opacity var(--dur-2) var(--ease-in),transform var(--dur-2) var(--ease-in)}
 @keyframes toastIn{from{opacity:0;transform:translateY(-6px) scale(.98)}}

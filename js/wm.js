@@ -1,5 +1,5 @@
 /* Window manager: open/close/focus, drag, resize, edge snapping, minimize to dock. */
-import { $, h, uid, clamp, isMobile, Bus } from './core.js';
+import { $, $$, h, uid, clamp, isMobile, Bus } from './core.js';
 import { ICONS } from './icons.js';
 import { Apps, appTile } from './apps.js';
 import { Notify } from './notify.js';
@@ -47,6 +47,15 @@ export const WM = {
     const el = h('section', { class: 'win opening', role: 'dialog', 'aria-label': app.name, tabindex: '-1', 'data-app': appId }, titlebar, body, grip);
     Object.assign(el.style, { left: left + 'px', top: top + 'px', width: w + 'px', height: ht + 'px' });
     $('#windows').append(el);
+    // Open from the launching icon (dock or desktop): point the scale origin at it.
+    try {
+      const src = $$(`.dock-item[data-app="${appId}"], .dicon[data-id="${appId}"]`).find(x => x.getClientRects().length);
+      if (src) {
+        const s = src.getBoundingClientRect(), r = el.getBoundingClientRect();
+        el.style.setProperty('--ox', Math.round(clamp(s.left + s.width / 2 - r.left, 0, r.width)) + 'px');
+        el.style.setProperty('--oy', Math.round(clamp(s.top + s.height / 2 - r.top, 0, r.height)) + 'px');
+      }
+    } catch {}
 
     const win = { id, appId, el, body, titleEl, maxBtn, minimized: false, state: 'normal', prev: null, instance: null };
     this.wins.set(id, win);

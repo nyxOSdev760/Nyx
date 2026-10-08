@@ -8,7 +8,11 @@
 
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
   --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-pill:999px;
-  --fs-xs:11px; --fs-sm:12px; --fs-md:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px; --fs-3xl:44px;
+  --r-win:14px; --r-ctl:10px;   /* windows and controls (macOS/Linear-ish) */
+  --fs-xs:12px; --fs-sm:12px; --fs-md:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px; --fs-3xl:44px;
+  /* Inner top highlight on raised surfaces, and a hairline ring. */
+  --edge:inset 0 1px 0 rgba(255,255,255,.06);
+  --ring:inset 0 0 0 1px var(--line);
 
   /* Springy for transforms (slight overshoot), plain ease-out for fades. */
   --ease-spring:cubic-bezier(.3,1.35,.55,1);
@@ -54,6 +58,7 @@
   --shadow-2:0 10px 30px rgba(12,14,22,.12);
   --shadow-3:0 28px 70px rgba(12,14,22,.18),0 2px 8px rgba(12,14,22,.08);
   --danger:#d63c3c; --ok:#1d8f5f; --warn:#a86b00;
+  --edge:inset 0 1px 0 rgba(255,255,255,.9);
   color-scheme:light;
 }
 
