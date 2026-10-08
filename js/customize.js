@@ -5,13 +5,13 @@
    first-run screen doesn't come back. Works with storage blocked. */
 import { $, $$, h, Store, Bus } from './core.js';
 import { ICONS, MARK, WORDMARK } from './icons.js';
-import { Settings, WALLPAPERS, ACCENTS, applyLook, motionOff, resolveTheme } from './settings.js';
+import { Settings, WALLPAPERS, ACCENTS, FONTS, PRESETS, applyLook, motionOff, resolveTheme } from './settings.js';
 import { Notify } from './notify.js';
 import { lowPower } from './dots.js';
 import { closePanels, fmtTime } from './shell.js';
 import { miniDesktop } from './preview.js';
 
-export const LOOK_KEYS = ['theme', 'accent', 'wallpaper', 'dotMotion'];
+export const LOOK_KEYS = ['theme', 'accent', 'wallpaper', 'font', 'dotMotion', 'sounds'];
 
 export const Customize = {
   finish: null,
@@ -36,6 +36,10 @@ export const Customize = {
     const wallBtns = WALLPAPERS.map(w => radio('wallpaper', w.id, null, { class: 'wall', kids: [h('i', { 'data-wall': w.id }, h('span', { class: 'wall-check', svg: ICONS.check })), h('span', { text: w.name })] }));
     const dotSw = h('button', { type: 'button', class: 'switch', role: 'switch', 'aria-labelledby': 'cz-dots-t', 'aria-describedby': 'cz-dots-d', onclick: () => { draft.dotMotion = !draft.dotMotion; update(); } });
     const dotNote = h('small', { id: 'cz-dots-d' });
+    const presetBtns = PRESETS.map(p => h('button', { type: 'button', class: 'preset', 'data-wall': p.wallpaper, style: `--pa:${p.accent}`, onclick: () => { Object.assign(draft, { theme: p.theme, accent: p.accent, wallpaper: p.wallpaper, font: p.font }); update(); } }, h('span', { class: 'preset-sw' }), h('span', { text: p.n })));
+    const fontSel = h('select', { class: 'select', 'aria-label': 'Interface font' }, FONTS.map(f => h('option', { value: f.id, text: f.n })));
+    fontSel.addEventListener('change', () => { draft.font = fontSel.value; update(); });
+    const soundSw = h('button', { type: 'button', class: 'switch', role: 'switch', 'aria-labelledby': 'cz-snd-t', onclick: () => { draft.sounds = !draft.sounds; update(); } });
 
     const sec = (n, title, ...kids) => h('section', { class: 'cz-sec' }, h('h2', null, h('span', { class: 'cz-n', text: n }), title), ...kids);
     const storageOk = Store.available();
@@ -49,10 +53,13 @@ export const Customize = {
             h('p', { id: 'cz-desc', text: first ? 'Pick a look for your desktop. Everything here can be changed later in Settings › Appearance.' : 'Changes preview live. Done keeps them, Cancel puts things back.' }),
             h('figure', { class: 'cz-prev' }, pv.el, h('figcaption', { text: 'Live preview. Move your pointer over it.' }))),
           h('div', { class: 'cz-opts' },
-            sec('1', 'Theme', h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Theme' }, themeBtns)),
-            sec('2', 'Accent', h('div', { class: 'cz-line' }, h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Accent color' }, accentBtns, custom), accentName)),
-            sec('3', 'Wallpaper', h('div', { class: 'walls', role: 'radiogroup', 'aria-label': 'Wallpaper' }, wallBtns)),
-            sec('4', 'Dot animation', h('div', { class: 'cz-line' }, h('div', { class: 'lbl' }, h('b', { id: 'cz-dots-t', text: 'Animate the dot field' }), dotNote), dotSw))))),
+            sec('1', 'Preset', h('div', { class: 'presets', role: 'group', 'aria-label': 'Theme presets' }, presetBtns)),
+            sec('2', 'Theme', h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Theme' }, themeBtns)),
+            sec('3', 'Accent', h('div', { class: 'cz-line' }, h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Accent color' }, accentBtns, custom), accentName)),
+            sec('4', 'Wallpaper', h('div', { class: 'walls', role: 'radiogroup', 'aria-label': 'Wallpaper' }, wallBtns)),
+            sec('5', 'Font', h('div', { class: 'cz-line' }, h('div', { class: 'lbl' }, h('b', { text: 'Interface font' }), h('small', { text: 'Loaded only when chosen.' })), fontSel)),
+            sec('6', 'Effects', h('div', { class: 'cz-line' }, h('div', { class: 'lbl' }, h('b', { id: 'cz-dots-t', text: 'Animate the dot field' }), dotNote), dotSw),
+              h('div', { class: 'cz-line' }, h('div', { class: 'lbl' }, h('b', { id: 'cz-snd-t', text: 'Interface sounds' }), h('small', { text: 'Soft clicks and chimes.' })), soundSw))))),
       h('footer', { class: 'cz-foot' },
         h('div', { class: 'cz-foot-in' },
           h('p', { class: 'note', text: storageOk ? '' : 'This browser is blocking storage, so your choices last until you reload.' }),
@@ -69,7 +76,9 @@ export const Customize = {
       if (picker.value !== draft.accent.toLowerCase()) picker.value = draft.accent.toLowerCase();
       accentName.textContent = preset ? preset.n : draft.accent.toUpperCase();
       wallBtns.forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === draft.wallpaper)));
+      if (fontSel.value !== draft.font) fontSel.value = draft.font;
       dotSw.setAttribute('aria-checked', String(draft.dotMotion));
+      soundSw.setAttribute('aria-checked', String(draft.sounds !== false));
       const oled = draft.wallpaper === 'oled';
       dotNote.textContent = !oled ? 'Shows on the Dot field wallpaper.' : lowPower ? 'Off automatically on this device to save power.'
         : motionOff() ? 'Paused while reduced motion is on.' : 'Dots lift and glow toward your pointer.';

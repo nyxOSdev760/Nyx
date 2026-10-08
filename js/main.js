@@ -7,6 +7,10 @@ import { WM } from './wm.js';
 import { Notify, reportRuntime } from './notify.js';
 import { registerShortcut } from './shortcuts.js';
 import { DotField, lowPower } from './dots.js';
+import { LiveWallpaper } from './backdrop.js';
+import { WALLPAPERS } from './settings.js';
+import { accentFromCanvas } from './accent.js';
+import { IDB } from './idb.js';
 import { initShell, Mode } from './shell.js';
 import { Customize } from './customize.js';
 import { showLaunchPrompt } from './launch.js';
@@ -34,20 +38,57 @@ try {
   applyLook();
   initShell();
 
-  let dots = null;
+  /* One canvas (#dots), one render loop: either the interactive dot field or a
+     live wallpaper is active, never both. Custom/static wallpapers use neither. */
+  let dots = null, live = null;
   try { dots = new DotField($('#dots'), { ignore: '.win,.bar,.panel,.cz,#launch-prompt,#toasts,#icons .dicon' }); } catch (e) { console.error('Dot field disabled:', e); }
-  const configureDots = () => {
-    if (!dots) return;
-    try { dots.configure({ enabled: Settings.get('wallpaper') === 'oled', motion: Settings.get('dotMotion') && !motionOff() && !lowPower, accent: Settings.get('accent') }); }
-    catch (e) { console.error('Dot field disabled:', e); }
+  try { live = new LiveWallpaper($('#dots')); } catch (e) { console.error('Live wallpaper disabled:', e); }
+  const wallKind = (id) => (WALLPAPERS.find(w => w.id === id) || {}).kind || 'static';
+  const configureBg = () => {
+    const wall = Settings.get('wallpaper'), kind = wallKind(wall);
+    const animate = !motionOff() && !lowPower;
+    try {
+      if (kind === 'dots') { live && live.configure({ kind: null }); dots && dots.configure({ enabled: true, motion: Settings.get('dotMotion') && animate, accent: Settings.get('accent') }); }
+      else if (kind === 'live') { dots && dots.configure({ enabled: false }); live && live.configure({ kind: wall, motion: animate, accent: Settings.get('accent') }); maybeAutoAccent(); }
+      else { dots && dots.configure({ enabled: false }); live && live.configure({ kind: null }); if (kind === 'custom') maybeAutoAccent(); }
+    } catch (e) { console.error('Backdrop error:', e); }
   };
-  configureDots();
-  reducedMq.addEventListener?.('change', configureDots);
+  /* Derive the accent from the wallpaper when the option is on. */
+  function maybeAutoAccent() {
+    if (!Settings.get('autoAccent')) return;
+    const apply = (src) => {
+      try {
+        const hex = accentFromCanvas(src);
+        if (hex && hex.toLowerCase() !== String(Settings.get('accent')).toLowerCase()) Settings.set('accent', hex);
+      } catch {}
+    };
+    if (Settings.get('wallpaper') === 'custom') {
+      // The custom image lives on the body, not the canvas: sample the image itself.
+      IDB.get('wallpaper').then(url => {
+        if (!url) return;
+        const img = new Image();
+        img.onload = () => apply(img);
+        img.src = url;
+      }).catch(() => {});
+    } else {
+      setTimeout(() => apply($('#dots')), 160);  // let the live wallpaper paint a frame first
+    }
+  }
+  // Apply a saved custom wallpaper image (stored in IndexedDB) to the body.
+  const applyCustomWall = () => {
+    IDB.get('wallpaper').then(url => {
+      document.documentElement.style.setProperty('--custom-wall', url ? `url("${url}")` : 'none');
+    }).catch(() => {});
+  };
+  applyCustomWall();
+  configureBg();
+  reducedMq.addEventListener?.('change', configureBg);
   Bus.on('settings', ({ key }) => {
     applyLook();
-    if (['*', 'wallpaper', 'dotMotion', 'reduceMotion', 'accent'].includes(key)) configureDots();
+    if (['*', 'wallpaper', 'wallpaperFit', 'dotMotion', 'reduceMotion', 'accent', 'autoAccent'].includes(key)) configureBg();
   });
-  Bus.on('look-preview', configureDots);
+  Bus.on('wallpaper-image', applyCustomWall);
+  Bus.on('look-preview', configureBg);
   mq('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (Settings.get('theme') === 'auto') applyLook(); });
 
   Mode.set(Store.get('mode', 'os') === 'browser' ? 'browser' : 'os', { save: false });

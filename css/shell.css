@@ -26,6 +26,16 @@
 [data-wall="slate"]{background:#0e0f11}
 [data-wall="dots"]{background:radial-gradient(rgba(255,255,255,.11) 1px,transparent 1.3px) 0 0/22px 22px,#060607}
 [data-wall="mist"]{background:radial-gradient(rgba(20,24,40,.12) 1px,transparent 1.3px) 0 0/22px 22px,#e7e8ec}
+/* Live wallpapers draw on the #dots canvas (which covers the body on the
+   desktop); these static gradients are what their small thumbnails show. */
+[data-wall="aurora"]{background:radial-gradient(60% 50% at 30% 35%,color-mix(in srgb,var(--accent) 45%,transparent),transparent),radial-gradient(50% 50% at 75% 30%,rgba(130,230,200,.4),transparent),#000}
+[data-wall="rain"]{background:repeating-linear-gradient(105deg,transparent 0 6px,color-mix(in srgb,var(--accent) 22%,transparent) 6px 7px),#05060a}
+[data-wall="stars"]{background:
+  radial-gradient(1.4px 1.4px at 20% 24%,#fff,transparent),radial-gradient(1.2px 1.2px at 64% 40%,color-mix(in srgb,var(--accent) 80%,#fff),transparent),
+  radial-gradient(1px 1px at 82% 68%,#fff,transparent),radial-gradient(1.3px 1.3px at 38% 76%,#fff,transparent),radial-gradient(1px 1px at 50% 14%,#fff,transparent),#000}
+/* Custom image wallpaper, stored in IndexedDB and set as --custom-wall. */
+body[data-wall="custom"]{background:var(--custom-wall,#000) center/cover no-repeat fixed,#000}
+body[data-wall="custom"][data-fit="fit"]{background:var(--custom-wall,#000) center/contain no-repeat fixed,#000}
 body{background-attachment:fixed}
 
 /* ---------- Desktop ---------- */

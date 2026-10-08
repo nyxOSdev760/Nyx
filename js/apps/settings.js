@@ -3,7 +3,8 @@
 import { h, Store, Bus, isMobile } from '../core.js';
 import { ICONS, MARK, WORDMARK } from '../icons.js';
 import { registerApp } from '../apps.js';
-import { Settings, ENGINES, BrowserNet, WALLPAPERS, ACCENTS, motionOff } from '../settings.js';
+import { Settings, ENGINES, BrowserNet, WALLPAPERS, ACCENTS, FONTS, PRESETS, motionOff } from '../settings.js';
+import { setCustomWallpaper, removeCustomWallpaper, hasCustomWallpaper } from '../wallpaper.js';
 import { History } from '../web.js';
 import { Customize } from '../customize.js';
 import { Launch } from '../launch.js';
@@ -96,6 +97,43 @@ registerApp({
       draw();
       return h('div', { class: 'srow stack' }, lbl('Accent color', 'Used sparingly: buttons, focus rings, the active window marker.'), wrap);
     }
+    function presetRow() {
+      const wrap = h('div', { class: 'presets', role: 'group', 'aria-label': 'Theme presets' },
+        PRESETS.map(p => h('button', { class: 'preset', type: 'button', 'data-wall': p.wallpaper, style: `--pa:${p.accent}`, onclick: () => {
+          try { Settings.setMany({ theme: p.theme, accent: p.accent, wallpaper: p.wallpaper, font: p.font }); } catch (e) { ctx.notify('Preset not applied', e.message); }
+        } }, h('span', { class: 'preset-sw' }), h('span', { text: p.n }))));
+      return h('div', { class: 'srow stack' }, lbl('Presets', 'One tap sets theme, accent, wallpaper and font together. Tweak anything after.'), wrap);
+    }
+    function fontRow() {
+      const s = h('select', { class: 'select', 'aria-label': 'Interface font' }, FONTS.map(f => h('option', { value: f.id, text: f.n, selected: Settings.get('font') === f.id })));
+      s.addEventListener('change', () => { if (!save('font', s.value)) s.value = Settings.get('font'); });
+      return srow('Font', 'The interface typeface. Loaded only when chosen.', s);
+    }
+    function customWallRow() {
+      const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
+      const file = h('input', { type: 'file', accept: 'image/*', hidden: true });
+      const fit = h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Image fit' });
+      const removeBtn = h('button', { class: 'btn sm', type: 'button', text: 'Remove', onclick: () => removeCustomWallpaper().then(() => { msg.textContent = 'Removed.'; msg.className = 'msg ok'; refresh(); }) });
+      const drawFit = () => fit.replaceChildren(...[['fill', 'Fill'], ['fit', 'Fit']].map(([v, n]) => h('button', { type: 'button', role: 'radio', 'aria-checked': String(Settings.get('wallpaperFit') === v), text: n, onclick: () => { if (save('wallpaperFit', v)) drawFit(); } })));
+      const row = h('div', { class: 'srow stack' });
+      const refresh = () => hasCustomWallpaper().then(has => {
+        drawFit();
+        row.replaceChildren(lbl('Your image', 'Upload a photo; it’s downscaled and kept in this browser only (up to 10 MB).'),
+          h('div', { class: 'row' },
+            h('button', { class: 'btn', type: 'button', onclick: () => file.click() }, h('span', { svg: ICONS.external }), has ? 'Replace' : 'Upload'),
+            has ? removeBtn : null, has ? fit : null, file),
+          msg);
+      });
+      file.addEventListener('change', () => {
+        const f = file.files && file.files[0]; file.value = '';
+        if (!f) return;
+        msg.textContent = 'Processing…'; msg.className = 'msg';
+        setCustomWallpaper(f).then(() => { msg.textContent = 'Wallpaper set.'; msg.className = 'msg ok'; refresh(); })
+          .catch(err => { msg.textContent = err.message; msg.className = 'msg err'; });
+      });
+      refresh();
+      return row;
+    }
     function clockRow() {
       const out = h('span', { class: 'clock-pv tnum' });
       const upd = () => { const d = new Date(); out.textContent = fmtTime(d) + (Settings.get('showDate') ? ' · ' + d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) : ''); };
@@ -108,11 +146,14 @@ registerApp({
 
     const SECTIONS = [
       { id: 'appearance', name: 'Appearance', icon: ICONS.paint, render: () => [
-        head('Appearance', 'Theme, accent color and effects.'),
+        head('Appearance', 'Presets, theme, accent, font and effects.'),
         lookPreview(),
+        group('Presets', presetRow()),
         group(null,
           segmented('theme', 'Theme', 'Auto follows your device.', [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']]),
           accentPicker(),
+          toggle('autoAccent', 'Accent from wallpaper', 'Pick the accent from the current wallpaper’s colors.'),
+          fontRow(),
           toggle('glass', 'Translucent surfaces', 'Blur what’s behind windows, the dock and panels. Turn off for better performance.'),
           toggle('reduceMotion', 'Reduce motion', 'Turn off window, dock and panel animations and the moving dot field.')),
       ] },
@@ -125,6 +166,7 @@ registerApp({
           draw();
           return h('section', { class: 'sgroup' }, h('h3', { class: 'group-title', text: 'Wallpaper' }), g);
         })(),
+        group('Your image', customWallRow()),
         group('Desktop',
           toggle('desktopIcons', 'Show desktop icons', 'Apps and shortcuts down the left edge. Phones always show the home screen.'),
           toggle('dotMotion', 'Animate the dot field', lowPower ? 'Off automatically on this device to save power.' : 'Dots lift toward your pointer on the Dot field wallpaper. Paused while reduced motion is on.')),
