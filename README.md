@@ -142,11 +142,12 @@ Firebase's free Spark plan covers a small community comfortably. Each open Chat 
 ```sh
 cd tests
 npm install
-npm run test:rules   # Firestore rules unit tests (starts the Firestore emulator; needs Java 11+)
-npm run test:e2e     # end-to-end tests in headless Chromium at desktop and 390px widths
+npm run test:rules     # Firestore rules unit tests (starts the Firestore emulator; needs Java 11+)
+npm run test:e2e       # core end-to-end tests in headless Chromium at desktop and 390px widths
+npm run test:features  # widgets, desktops, lock screen, bookmarks, sounds, personalization
 ```
 
-`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens NyxOS with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run flow, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones.
+`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens NyxOS with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run flow, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones. `test:features` adds the personalization, widgets, multiple desktops, lock screen, bookmarks and sound features (no Firebase needed).
 
 ## Notes
 
