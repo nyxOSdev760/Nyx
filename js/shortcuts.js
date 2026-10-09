@@ -1,5 +1,5 @@
 /* Site shortcuts (desktop, home screen, new tab page).
-   Each opens its URL in a browser tab, never by navigating NyxOS away. Icons
+   Each opens its URL in a browser tab, never by navigating Kanni away. Icons
    load in the background; a letter tile shows until (or instead of) the
    real favicon. */
 import { h, isHttpUrl, state, Bus } from './core.js';

@@ -200,15 +200,15 @@ registerApp({
           else { msg.textContent = 'Pop-ups are blocked. Allow pop-ups for this site, then try again.'; msg.className = 'msg err'; }
         } }, h('span', { svg: ICONS.external }), 'Open in about:blank');
         return [
-          head('Launch', 'Run NyxOS inside an about:blank tab, so the tab’s address bar shows about:blank instead of this site.'),
+          head('Launch', 'Run Kanni inside an about:blank tab, so the tab’s address bar shows about:blank instead of this site.'),
           h('div', { class: 'launch-card' },
             h('div', { class: 'launch-pv', 'aria-hidden': 'true' }, h('div', { class: 'launch-url' }, h('span', { svg: ICONS.lock }), 'about:blank'), h('div', { class: 'launch-body', svg: MARK })),
             h('div', { class: 'launch-txt' },
               h('b', { text: Launch.framed ? 'Already running in about:blank' : 'Open in about:blank' }),
-              h('small', { text: Launch.framed ? 'This copy is inside an about:blank tab or another page.' : 'Opens a new tab at about:blank with NyxOS filling it. Your browser may ask you to allow pop-ups.' }),
+              h('small', { text: Launch.framed ? 'This copy is inside an about:blank tab or another page.' : 'Opens a new tab at about:blank with Kanni filling it. Your browser may ask you to allow pop-ups.' }),
               h('div', { class: 'row' }, openBtn), msg)),
           group(null,
-            toggle('askLaunch', 'Ask on launch', 'When NyxOS loads, show a small prompt with a button to open it in about:blank. A click is needed because browsers block pop-ups opened without one. Never shown inside the about:blank tab.')),
+            toggle('askLaunch', 'Ask on launch', 'When Kanni loads, show a small prompt with a button to open it in about:blank. A click is needed because browsers block pop-ups opened without one. Never shown inside the about:blank tab.')),
         ];
       } },
       { id: 'notifications', name: 'Notifications', icon: ICONS.bell, render: () => [
@@ -229,7 +229,7 @@ registerApp({
           group(null,
             toggle('sounds', 'Interface sounds', 'Soft clicks and chimes for windows, notifications and the lock screen.'),
             volRow,
-            toggle('startupSound', 'Startup chime', 'A short chime when NyxOS loads.'),
+            toggle('startupSound', 'Startup chime', 'A short chime when Kanni loads.'),
             srow('Test', 'Play a sample sound.', h('button', { class: 'btn', type: 'button', text: 'Play', onclick: () => Bus.emit('sfx', 'notify') }))),
         ];
       } },
@@ -287,8 +287,8 @@ registerApp({
           r.readAsText(f);
         });
         const exportSettings = () => {
-          const blob = new Blob([JSON.stringify({ app: 'NyxOS', version: 1, settings: Settings.values }, null, 2)], { type: 'application/json' });
-          const a = h('a', { href: URL.createObjectURL(blob), download: 'nyxos-settings.json' });
+          const blob = new Blob([JSON.stringify({ app: 'Kanni', version: 1, settings: Settings.values }, null, 2)], { type: 'application/json' });
+          const a = h('a', { href: URL.createObjectURL(blob), download: 'kanni-settings.json' });
           document.body.append(a); a.click(); a.remove();
           setTimeout(() => URL.revokeObjectURL(a.href), 1000);
           msg.textContent = 'Settings exported.'; msg.className = 'msg ok';
@@ -307,8 +307,8 @@ registerApp({
       { id: 'about', name: 'About', icon: ICONS.info, render: () => [
         h('div', { class: 'about-hero' }, h('span', { class: 'about-mark', svg: MARK }), h('div', null, h('div', { class: 'about-wm', svg: WORDMARK }), h('small', { text: `Version ${APP_VERSION}` }))),
         h('div', { class: 'prose' },
-          h('p', { text: 'NyxOS is a quiet desktop for the web, named for Nyx, the Greek goddess of night. It runs entirely in your browser as a static site, with no server of its own and no service worker.' }),
-          h('p', null, 'Inspired by ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. NyxOS is written from scratch and contains no GalaxyV7 code.'),
+          h('p', { text: 'Kanni is a quiet desktop for the web. It runs entirely in your browser as a static site, with no server of its own and no service worker.' }),
+          h('p', null, 'Inspired by ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. Kanni is written from scratch and contains no GalaxyV7 code.'),
           h('p', { text: 'Shortcuts open in the built-in browser. YouTube and TikTok refuse to be shown inside other pages, so in Direct mode use Open in new tab for those.' })),
         h('div', { class: 'row', style: 'margin-top:4px' }, h('button', { class: 'btn sm', type: 'button', onclick: () => WhatsNew.open() }, h('span', { svg: ICONS.sparkle }), 'What’s new')),
         h('h3', { class: 'group-title', text: 'Changelog' }),

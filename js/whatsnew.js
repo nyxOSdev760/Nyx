@@ -5,10 +5,13 @@
 import { $, h, Store } from './core.js';
 import { ICONS, MARK, WORDMARK } from './icons.js';
 
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 
 /* Newest first. Each: { v, date, notes:[...] } */
 export const CHANGELOG = [
+  { v: '1.3.0', date: '2026-10', notes: [
+    'NyxOS is now Kanni 👾, with a new pixel mark. Your settings, data and account carry over.',
+  ] },
   { v: '1.2.0', date: '2026-10', notes: [
     'Desktop widgets: Clock, Weather and Calendar, with a widget picker.',
     'Up to 4 desktops with a dock switcher, Ctrl+Alt+arrows, and move-to-desktop.',

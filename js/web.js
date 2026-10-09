@@ -3,7 +3,7 @@ import { Store, isHttpUrl, hostOf, Bus } from './core.js';
 import { Settings, ENGINES } from './settings.js';
 import { Shortcuts } from './shortcuts.js';
 
-export const NEWTAB = 'nyx://newtab';
+export const NEWTAB = 'kanni://newtab';
 /* ---------- Browser history store ---------- */
 export const History = {
   list() { const v = Store.get('history', []); return Array.isArray(v) ? v.filter(x => x && isHttpUrl(x.url)) : []; },
@@ -32,7 +32,7 @@ export const Bookmarks = {
 export function parseInput(raw) {
   const s = String(raw || '').trim();
   if (!s) return null;
-  if (/^(nyx|snap):\/\/newtab\/?$/i.test(s)) return { kind: 'internal', url: 'nyx://newtab' };
+  if (/^(kanni|nyx|snap):\/\/newtab\/?$/i.test(s)) return { kind: 'internal', url: NEWTAB };
   const hostLike = /^(localhost|\d{1,3}(\.\d{1,3}){3}|[^\s/:?#]+\.[a-z][a-z0-9-]+)(:\d{1,5})?([/?#]\S*)?$/i;
   const scheme = s.match(/^([a-z][a-z0-9+.-]*):/i);
   if (scheme && !hostLike.test(s)) {
@@ -49,7 +49,7 @@ export function parseInput(raw) {
   }
   return { kind: 'web', url: ENGINES[Settings.get('searchEngine')].url + encodeURIComponent(s), search: true };
 }
-export function displayUrl(url) { return url === 'nyx://newtab' ? '' : url; }
+export function displayUrl(url) { return url === NEWTAB ? '' : url; }
 
 
 /* What the address bar and tab show: a site name, the search words, or the bare host. */

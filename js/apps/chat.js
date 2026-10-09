@@ -113,7 +113,7 @@ registerApp({
       closeLayer();
       if (Account.status === 'unconfigured') {
         stopRoom();
-        el.replaceChildren(screen(ICONS.chat, 'Chat isn’t set up here yet', 'This copy of NyxOS has no Firebase project connected, so accounts and Chat are off. Everything else works as usual. The site owner can turn Chat on by following the README.'));
+        el.replaceChildren(screen(ICONS.chat, 'Chat isn’t set up here yet', 'This copy of Kanni has no Firebase project connected, so accounts and Chat are off. Everything else works as usual. The site owner can turn Chat on by following the README.'));
         return;
       }
       if (Account.status === 'loading') { stopRoom(); el.replaceChildren(h('div', { class: 'chat-screen' }, h('span', { class: 'spinner lg' }), h('p', { text: 'Connecting…' }))); return; }
@@ -176,7 +176,7 @@ registerApp({
       return h('div', { class: 'chat-auth scroll' }, h('div', { class: 'auth-card' },
         h('div', { class: 'auth-mark', svg: MARK }),
         h('h2', { text: 'Join the conversation' }),
-        h('p', { class: 'auth-sub', text: 'One public room for everyone on NyxOS. Sign in with a username; no email needed.' }),
+        h('p', { class: 'auth-sub', text: 'One public room for everyone on Kanni. Sign in with a username; no email needed.' }),
         tabs, form,
         h('p', { class: 'auth-foot' }, 'Be kind. Read the ', h('a', { href: RULES_URL, target: '_blank', rel: 'noopener', text: 'chat rules' }), '.')));
     }
@@ -498,11 +498,11 @@ extraSections.push({
   id: 'account', name: 'Account', icon: ICONS.user, after: 'launch',
   render: ({ head, group, srow, confirmBtn }) => {
     const u = Account.user;
-    if (!Account.available()) return [head('Account', 'Accounts power Chat and Voice.'), group(null, srow('Not set up', 'This copy of NyxOS has no Firebase project connected. See the README to turn accounts on.'))];
+    if (!Account.available()) return [head('Account', 'Accounts power Chat and Voice.'), group(null, srow('Not set up', 'This copy of Kanni has no Firebase project connected. See the README to turn accounts on.'))];
     if (!u) return [head('Account', 'Accounts power Chat and Voice.'), group(null, srow('Not signed in', Account.status === 'error' ? Account.error : 'Sign in or create an account from the Chat app.', h('button', { class: 'btn primary', type: 'button', text: 'Open Chat', onclick: () => WM.open('chat') })))];
     const blocked = Object.entries(Blocks.map);
     return [
-      head('Account', 'Your NyxOS identity for Chat and Voice.'),
+      head('Account', 'Your Kanni identity for Chat and Voice.'),
       h('div', { class: 'acct-card' }, Account.avatar(u, 'xl'), h('div', null, h('b', { text: u.name }), h('small', { text: Account.isAdmin ? 'Admin' : Account.banned ? 'Banned from posting' : 'Member' }))),
       group('Session', srow('Sign out', 'You stay signed in on this browser until you sign out.', confirmBtn('Sign out', 'Tap again to sign out', () => Account.signOut(), 'btn'))),
       group('Blocked users', ...(blocked.length ? blocked.map(([id, name]) => srow(String(name), null, h('button', { class: 'btn sm', type: 'button', text: 'Unblock', onclick: async (e) => { e.currentTarget.disabled = true; try { await Blocks.set(id, name, false); } catch {} } })))

@@ -1,4 +1,4 @@
-/* The interactive dot field: the signature NyxOS desktop.
+/* The interactive dot field: the signature Kanni desktop.
    A grid of dots on pure black. Near the pointer the dots lift, brighten and
    pick up the accent, with a faint accent glow at the peak. The falloff is a
    smooth compact kernel (1 - d²/R²)³, so lifted dots fade out with no edge.

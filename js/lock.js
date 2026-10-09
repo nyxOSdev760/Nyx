@@ -1,7 +1,7 @@
 /* Lock screen: a big clock and date over the wallpaper, an optional PIN, and
    idle auto-lock. The PIN is a privacy screen, not real security: it's hashed
    with SHA-256 (SubtleCrypto) and kept in this browser, and anyone can reset
-   it via "Forgot PIN", which erases NyxOS data. */
+   it via "Forgot PIN", which erases Kanni data. */
 import { $, h, Store, Bus, uid } from './core.js';
 import { ICONS, MARK } from './icons.js';
 import { Settings } from './settings.js';
@@ -9,7 +9,7 @@ import { fmtTime } from './shell.js';
 
 const subtle = () => (window.crypto && crypto.subtle) || null;
 async function hash(pin, salt) {
-  const data = new TextEncoder().encode(`nyxos:${salt}:${pin}`);
+  const data = new TextEncoder().encode(`nyxos:${salt}:${pin}`);   // pre-Kanni prefix, kept so saved PINs still match
   const buf = await subtle().digest('SHA-256', data);
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
@@ -85,7 +85,7 @@ export const Lock = {
     if (!hasPin) hint.addEventListener('click', unlockNoPin);
 
     const forgot = h('button', { class: 'lock-forgot', type: 'button', text: 'Forgot PIN?', onclick: () => {
-      if (confirm('Reset the PIN? This erases all NyxOS data in this browser (settings, history, widgets) and reloads.')) { Store.clearAll(); location.reload(); }
+      if (confirm('Reset the PIN? This erases all Kanni data in this browser (settings, history, widgets) and reloads.')) { Store.clearAll(); location.reload(); }
     } });
 
     const card = h('div', { class: 'lock-card' },

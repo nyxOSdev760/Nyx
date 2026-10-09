@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// NyxOS Firestore rules.
+// Kanni Firestore rules.
 // - Only signed-in users can read or write anything (except checking whether
 //   a username is free, which happens before sign-up).
 // - Users can only post as themselves; their name must match their account.
@@ -14,7 +14,7 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function me() { return request.auth.uid; }
     function validName(n) { return n is string && n.matches('^[A-Za-z0-9_]{3,20}$'); }
-    // The account's sign-in email is <lowercase username>@nyx.local.
+    // The account's sign-in email is <lowercase username>@nyx.local (kept from the old name).
     function isMyName(n) { return validName(n) && request.auth.token.email == n.lower() + '@nyx.local'; }
     function isAdmin() {
       return signedIn() && exists(/databases/$(database)/documents/config/admins)

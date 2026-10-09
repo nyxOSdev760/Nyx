@@ -2,12 +2,12 @@
 
 const svg = (paths) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
 
-/* The NyxOS mark: a crescent with one star in its hollow. */
-export const CRESCENT = 'M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z';
-export const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${CRESCENT}"/><circle cx="17.6" cy="6.6" r="1.05" fill="currentColor"/></svg>`;
+/* The Kanni mark: a pixel invader, 11×8 pixels drawn 2 units each. */
+export const INVADER = 'M5 4h2v2h-2zM17 4h2v2h-2zM7 6h2v2h-2zM15 6h2v2h-2zM5 8h14v2h-14zM3 10h4v2h-4zM9 10h6v2h-6zM17 10h4v2h-4zM1 12h22v2h-22zM1 14h2v2h-2zM5 14h14v2h-14zM21 14h2v2h-2zM1 16h2v2h-2zM5 16h2v2h-2zM17 16h2v2h-2zM21 16h2v2h-2zM7 18h4v2h-4zM13 18h4v2h-4z';
+export const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" shape-rendering="crispEdges" d="${INVADER}"/></svg>`;
+const CRESCENT = 'M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z';
 
 export const ICONS = {
-  logo: svg(`<path d="${CRESCENT}"/>`),
   globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.75 5.6 3.75 9S14.5 18.4 12 21M12 3C9.5 5.6 8.25 8.6 8.25 12S9.5 18.4 12 21"/>'),
   sliders: svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
   min: svg('<path d="M6.5 12h11"/>'),
@@ -65,5 +65,5 @@ export const ICONS = {
   sparkle: svg('<path d="M12 4c.6 3.9 2.1 5.4 6 6-3.9.6-5.4 2.1-6 6-.6-3.9-2.1-5.4-6-6 3.9-.6 5.4-2.1 6-6Z"/>'),
 };
 
-/* Wordmark: "Nyx" in the display face, "OS" small in the UI face. */
-export const WORDMARK = '<span class="wordmark" aria-label="NyxOS"><span class="wm-nyx" aria-hidden="true">Nyx</span><span class="wm-os" aria-hidden="true">OS</span></span>';
+/* Wordmark: "Kanni" in the display face. */
+export const WORDMARK = '<span class="wordmark" aria-label="Kanni"><span class="wm-name" aria-hidden="true">Kanni</span></span>';

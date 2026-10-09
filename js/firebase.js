@@ -6,7 +6,7 @@ import { FIREBASE_CONFIG, FIREBASE_SDK_VERSION } from './config.js';
 
 const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 export const EMULATOR = LOCAL && (() => { try { return new URLSearchParams(location.search).get('emulator') === '1'; } catch { return false; } })();
-const DEMO_CONFIG = { apiKey: 'demo-key', authDomain: 'demo-nyx.firebaseapp.com', projectId: 'demo-nyx', appId: 'demo-app' };
+const DEMO_CONFIG = { apiKey: 'demo-key', authDomain: 'demo-kanni.firebaseapp.com', projectId: 'demo-kanni', appId: 'demo-app' };
 
 export const firebaseConfigured = () => EMULATOR || !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
 
@@ -21,8 +21,8 @@ export function loadFirebase() {
     const [A, U, F] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
     const cfg = EMULATOR && !FIREBASE_CONFIG.apiKey ? DEMO_CONFIG : FIREBASE_CONFIG;
     const app = A.getApps().length ? A.getApp() : A.initializeApp(cfg);
-    const fresh = !app._nyx;
-    app._nyx = true;
+    const fresh = !app._kanni;
+    app._kanni = true;
     const auth = fresh ? U.initializeAuth(app, { persistence: [U.indexedDBLocalPersistence, U.browserLocalPersistence, U.inMemoryPersistence] }) : U.getAuth(app);
     const db = F.getFirestore(app);
     if (EMULATOR && fresh) {

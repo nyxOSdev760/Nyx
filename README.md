@@ -1,8 +1,8 @@
-# NyxOS
+# Kanni 👾
 
-A quiet desktop for the web, named for Nyx, the Greek goddess of night. NyxOS is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run customize screen, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
+A quiet desktop for the web. Kanni (formerly NyxOS) is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run customize screen, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
 
-Inspired by [GalaxyV7](https://github.com/whosrogo/GalaxyV7) by whosrogo. NyxOS is written from scratch and contains no GalaxyV7 code.
+Inspired by [GalaxyV7](https://github.com/whosrogo/GalaxyV7) by whosrogo. Kanni is written from scratch and contains no GalaxyV7 code.
 
 ## Run it
 
@@ -44,7 +44,7 @@ firestore.rules     Firestore security rules
 tests/              rules tests and end-to-end tests
 ```
 
-Add an app with `registerApp({ id, name, icon, mount(root, ctx) { … } })`, or at runtime with `window.Nyx.registerApp(...)` (`window.SNAP` still works).
+Add an app with `registerApp({ id, name, icon, mount(root, ctx) { … } })`, or at runtime with `window.Kanni.registerApp(...)` (`window.Nyx` and `window.SNAP` still work).
 
 ## Turning on Chat and Voice (Firebase)
 
@@ -58,7 +58,7 @@ Chat and Voice need a free Firebase project. Until you add one, the Chat app say
 
 ### 2. Enable Email/Password sign-in
 
-NyxOS signs people in with a username and password. Under the hood each username becomes `username@nyx.local` for Firebase's email/password provider; no email is ever sent and NyxOS never stores passwords.
+Kanni signs people in with a username and password. Under the hood each username becomes `username@nyx.local` for Firebase's email/password provider (the domain is kept from the old name so existing accounts keep working); no email is ever sent and Kanni never stores passwords.
 
 1. **Build › Authentication › Get started**.
 2. **Sign-in method** tab › **Email/Password** › turn on **Email/Password** (leave "Email link" off) › **Save**.
@@ -104,10 +104,10 @@ firebase deploy --only firestore:rules --project your-project-id
 
 ### 7. Make yourself an admin
 
-1. Open NyxOS, open **Chat**, and create your account.
+1. Open Kanni, open **Chat**, and create your account.
 2. In the Firebase console, **Authentication › Users**: copy the **User UID** of the account `yourname@nyx.local`.
 3. **Firestore Database › Data › Start collection**: collection ID `config`, document ID `admins`, add a field `uids` of type **array** with one **string** item: your UID. Save.
-4. Reload NyxOS. A **Moderate** button appears in Chat's header. To add more admins, add their UIDs to the same array.
+4. Reload Kanni. A **Moderate** button appears in Chat's header. To add more admins, add their UIDs to the same array.
 
 Admins can delete any message, ban users (banned users can't post or join voice), unban them, and review reports. Everyone can report a message and block a user (hides that person's messages for them; manage the list in **Settings › Account**).
 
@@ -123,7 +123,7 @@ The 6-person voice limit is enforced by the app (Firestore rules can't count doc
 
 ### Voice and TURN
 
-Voice is a WebRTC mesh: each person connects directly to every other person, and Firestore only carries the connection setup. NyxOS uses Google's public STUN servers. Some networks (strict school or office firewalls, some mobile carriers) block direct connections; people there will see "Couldn't connect". Fix that by adding a TURN server (for example from a TURN provider or your own coturn) to `TURN_SERVERS` in `js/config.js`:
+Voice is a WebRTC mesh: each person connects directly to every other person, and Firestore only carries the connection setup. Kanni uses Google's public STUN servers. Some networks (strict school or office firewalls, some mobile carriers) block direct connections; people there will see "Couldn't connect". Fix that by adding a TURN server (for example from a TURN provider or your own coturn) to `TURN_SERVERS` in `js/config.js`:
 
 ```js
 export const TURN_SERVERS = [
@@ -147,9 +147,9 @@ npm run test:e2e       # core end-to-end tests in headless Chromium at desktop a
 npm run test:features  # widgets, desktops, lock screen, bookmarks, sounds, personalization
 ```
 
-`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens NyxOS with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run flow, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones. `test:features` adds the personalization, widgets, multiple desktops, lock screen, bookmarks and sound features (no Firebase needed).
+`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens Kanni with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run flow, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones. `test:features` adds the personalization, widgets, multiple desktops, lock screen, bookmarks and sound features (no Firebase needed).
 
 ## Notes
 
 - The browser loads pages directly ("Direct" mode). It is not a proxy: sites that refuse to be framed (YouTube, TikTok and many others) stay blank. The toolbar's **Open in a new browser tab** button always opens the current page for real. A proxy server you run can be plugged in under **Settings › Browser** (or register a transport with `BrowserNet.register`).
-- There is no service worker; on load NyxOS removes any left at its address by an earlier deploy.
+- There is no service worker; on load Kanni removes any left at its address by an earlier deploy.

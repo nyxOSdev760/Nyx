@@ -1,5 +1,5 @@
-/* NyxOS entry point. index.html's classic script owns the startup watchdog
-   (window.NyxBoot); this module boots the shell and reports back. */
+/* Kanni entry point. index.html's classic script owns the startup watchdog
+   (window.KanniBoot); this module boots the shell and reports back. */
 import { $, Store, Bus, state, mq } from './core.js';
 import { Settings, applyLook, motionOff, BrowserNet, reducedMq } from './settings.js';
 import { registerApp } from './apps.js';
@@ -24,7 +24,7 @@ import './apps/widgets.js';
 import './apps/chat.js';
 import { Account } from './account.js';
 
-const boot = window.NyxBoot || { done() {}, fatal(e) { throw e; } };
+const boot = window.KanniBoot || { done() {}, fatal(e) { throw e; } };
 
 addEventListener('error', e => { if (e.message) reportRuntime(e.message); });
 addEventListener('unhandledrejection', e => reportRuntime((e.reason && e.reason.message) || e.reason || 'A background task failed.'));
@@ -102,8 +102,8 @@ try {
 
   Mode.set(Store.get('mode', 'os') === 'browser' ? 'browser' : 'os', { save: false });
 
-  // Extension point for later apps: window.Nyx.registerApp({...}) (window.SNAP still works).
-  window.Nyx = window.SNAP = Object.freeze({
+  // Extension point for later apps: window.Kanni.registerApp({...}) (window.Nyx and window.SNAP still work).
+  window.Kanni = window.Nyx = window.SNAP = Object.freeze({
     registerApp, registerShortcut, mode: m => Mode.set(m), open: (id, a) => WM.open(id, a),
     notify: (t, b) => Notify.push({ title: t, body: b }), net: BrowserNet, settings: { get: k => Settings.get(k) },
     lock: () => Lock.lock(),

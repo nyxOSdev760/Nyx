@@ -1,7 +1,7 @@
 /* A tiny IndexedDB key/value store for things too big for localStorage,
    namely the custom wallpaper image. Never throws; resolves null on failure
    (private mode, blocked storage) so the OS keeps working. */
-const DB = 'nyxos', STORE = 'kv';
+const DB = 'nyxos', STORE = 'kv';   // the pre-Kanni name, kept so saved data stays
 let dbp = null;
 function open() {
   if (dbp) return dbp;

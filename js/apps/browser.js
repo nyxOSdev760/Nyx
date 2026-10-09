@@ -1,5 +1,5 @@
 /* Browser app: pill tabs, a compact toolbar, and the new tab page.
-   Pages load through BrowserNet (settings.js), never by moving NyxOS away. */
+   Pages load through BrowserNet (settings.js), never by moving Kanni away. */
 import { h, uid, isHttpUrl, isMobile, Bus } from '../core.js';
 import { ICONS } from '../icons.js';
 import { registerApp } from '../apps.js';

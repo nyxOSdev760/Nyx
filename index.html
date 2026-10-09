@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="NyxOS, a quiet desktop for the web.">
-<title>NyxOS</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23000'/%3E%3Cg transform='translate(4 4)' fill='%239db4ff'%3E%3Cpath d='M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z'/%3E%3Ccircle cx='17.6' cy='6.6' r='1.05'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="description" content="Kanni, a quiet desktop for the web.">
+<title>Kanni</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23000'/%3E%3Cpath transform='translate(4 4)' fill='%239db4ff' shape-rendering='crispEdges' d='M5 4h2v2h-2zM17 4h2v2h-2zM7 6h2v2h-2zM15 6h2v2h-2zM5 8h14v2h-14zM3 10h4v2h-4zM9 10h6v2h-6zM17 10h4v2h-4zM1 12h22v2h-22zM1 14h2v2h-2zM5 14h14v2h-14zM21 14h2v2h-2zM1 16h2v2h-2zM5 16h2v2h-2zM17 16h2v2h-2zM21 16h2v2h-2zM7 18h4v2h-4zM13 18h4v2h-4z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
@@ -24,8 +24,8 @@
 if(t==='auto'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else if(t!=='light'){t='dark';}r.dataset.theme=t;
 if(/^#[0-9a-f]{6}$/i.test(s.accent||'')&&s.accent.toLowerCase()!=='#7aa2ff')r.style.setProperty('--accent',s.accent);
 if(s.reduceMotion===true)r.dataset.motion='reduce';}catch(e){}})();
-/* Startup watchdog: never hang on the boot screen. main.js calls NyxBoot.done(). */
-window.NyxBoot=(function(){
+/* Startup watchdog: never hang on the boot screen. main.js calls KanniBoot.done(). */
+window.KanniBoot=(function(){
   var finished=false,t0=Date.now();
   var timer=setTimeout(function(){if(!finished)fatal(new Error('Startup took too long and was stopped.'));},8000);
   function boot(){return document.getElementById('boot');}
@@ -53,10 +53,10 @@ window.NyxBoot=(function(){
   return{done:done,fatal:fatal};
 })();
 </script>
-<script type="module" src="js/main.js" onerror="NyxBoot.fatal(new Error('A file NyxOS needs could not be loaded. Check your connection and reload.'))"></script>
+<script type="module" src="js/main.js" onerror="KanniBoot.fatal(new Error('A file Kanni needs could not be loaded. Check your connection and reload.'))"></script>
 </head>
 <body data-wall="oled">
-<div id="boot" role="status" aria-label="Starting NyxOS"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z"/><circle cx="17.6" cy="6.6" r="1.05" fill="currentColor"/></svg></div>
+<div id="boot" role="status" aria-label="Starting Kanni"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" shape-rendering="crispEdges" d="M5 4h2v2h-2zM17 4h2v2h-2zM7 6h2v2h-2zM15 6h2v2h-2zM5 8h14v2h-14zM3 10h4v2h-4zM9 10h6v2h-6zM17 10h4v2h-4zM1 12h22v2h-22zM1 14h2v2h-2zM5 14h14v2h-14zM21 14h2v2h-2zM1 16h2v2h-2zM5 16h2v2h-2zM17 16h2v2h-2zM21 16h2v2h-2zM7 18h4v2h-4zM13 18h4v2h-4z"/></svg></div>
 
 <main id="desktop" aria-label="Desktop">
   <canvas id="dots" aria-hidden="true"></canvas>
@@ -102,7 +102,7 @@ window.NyxBoot=(function(){
 
 <div id="fatal" role="alert" hidden>
   <div>
-    <h1>NyxOS couldn't start</h1>
+    <h1>Kanni couldn't start</h1>
     <p>Something went wrong while loading. Saved settings may be damaged. Resetting them usually fixes this.</p>
     <pre id="fatal-msg"></pre>
     <div class="row"><button class="btn primary" id="fatal-reset" type="button" onclick="try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('snap:')===0)localStorage.removeItem(k);});}catch(e){}location.reload();">Reset settings and reload</button><button class="btn" type="button" onclick="location.reload()">Reload</button></div>

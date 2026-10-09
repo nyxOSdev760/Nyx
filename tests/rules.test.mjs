@@ -9,7 +9,7 @@ const RULES = fs.readFileSync(new URL('../firestore.rules', import.meta.url), 'u
 const [host, port] = (process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080').split(':');
 
 before(async () => {
-  env = await initializeTestEnvironment({ projectId: 'demo-nyx', firestore: { rules: RULES, host, port: Number(port) } });
+  env = await initializeTestEnvironment({ projectId: 'demo-kanni', firestore: { rules: RULES, host, port: Number(port) } });
 });
 after(async () => { await env.cleanup(); });
 beforeEach(async () => {

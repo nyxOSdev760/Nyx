@@ -3,7 +3,7 @@
    Firebase console › Project settings › Your apps › Web app › SDK setup and
    configuration › Config. These values are public identifiers, not secrets;
    access is controlled by firestore.rules.
-   Leave apiKey empty and NyxOS runs without accounts or Chat.
+   Leave apiKey empty and Kanni runs without accounts or Chat.
    ========================================================================= */
 export const FIREBASE_CONFIG = {
   apiKey: '',

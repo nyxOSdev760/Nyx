@@ -1,5 +1,6 @@
 /* Accounts: username + password on top of Firebase email/password auth.
-   A username maps to <username>@nyx.local; NyxOS never sees or stores the
+   A username maps to <username>@nyx.local (a domain kept from the old name
+   so existing accounts can still sign in); Kanni never sees or stores the
    password itself. Usernames are 3–20 of [A-Za-z0-9_], unique without
    regard to case, and reserved in the "usernames" collection inside a
    transaction. Loading Firebase never blocks the OS: until it's ready

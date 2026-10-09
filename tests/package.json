@@ -1,11 +1,11 @@
 {
-  "name": "nyxos-tests",
+  "name": "kanni-tests",
   "private": true,
   "type": "module",
-  "description": "Firestore rules tests and end-to-end tests for NyxOS. Not needed to run the site.",
+  "description": "Firestore rules tests and end-to-end tests for Kanni. Not needed to run the site.",
   "scripts": {
-    "test:rules": "firebase emulators:exec --only firestore --project demo-nyx --config ../firebase.json \"node --test rules.test.mjs\"",
-    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-nyx --config ../firebase.json \"node e2e.mjs\"",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-kanni --config ../firebase.json \"node --test rules.test.mjs\"",
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-kanni --config ../firebase.json \"node e2e.mjs\"",
     "test:features": "node phase7.mjs",
     "test": "npm run test:rules && npm run test:e2e && npm run test:features"
   },

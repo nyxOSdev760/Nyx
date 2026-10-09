@@ -1,4 +1,4 @@
-// Shared helpers for the NyxOS end-to-end tests.
+// Shared helpers for the Kanni end-to-end tests.
 import { chromium } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -49,8 +49,8 @@ export async function newCtx(browser, { width = 1366, height = 820, mobile = fal
   await ctx.addInitScript(({ customized, settings, storage, blockPopups }) => {
     if (storage === 'blocked') { Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('blocked', 'SecurityError'); } }); return; }
     try {
-      if (window === window.top && !sessionStorage.getItem('nyx-test-seeded')) {
-        sessionStorage.setItem('nyx-test-seeded', '1');
+      if (window === window.top && !sessionStorage.getItem('kanni-test-seeded')) {
+        sessionStorage.setItem('kanni-test-seeded', '1');
         if (customized) localStorage.setItem('snap:customized', 'true');
         if (settings) { localStorage.setItem('snap:settings', JSON.stringify(settings)); localStorage.setItem('snap:settingsVersion', '3'); }
       }
@@ -97,14 +97,14 @@ export async function emulatorUp() {
   try { await fetch('http://127.0.0.1:9099/'); await fetch('http://127.0.0.1:8080/'); return true; } catch { return false; }
 }
 export async function resetEmulators() {
-  await fetch('http://127.0.0.1:8080/emulator/v1/projects/demo-nyx/databases/(default)/documents', { method: 'DELETE' });
-  await fetch('http://127.0.0.1:9099/emulator/v1/projects/demo-nyx/accounts', { method: 'DELETE' });
+  await fetch('http://127.0.0.1:8080/emulator/v1/projects/demo-kanni/databases/(default)/documents', { method: 'DELETE' });
+  await fetch('http://127.0.0.1:9099/emulator/v1/projects/demo-kanni/accounts', { method: 'DELETE' });
 }
 export async function adminWrite(path, fields) {
-  const r = await fetch(`http://127.0.0.1:8080/v1/projects/demo-nyx/databases/(default)/documents/${path}`, { method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ fields }) });
+  const r = await fetch(`http://127.0.0.1:8080/v1/projects/demo-kanni/databases/(default)/documents/${path}`, { method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ fields }) });
   return r.json();
 }
 export async function adminGet(path) {
-  const r = await fetch(`http://127.0.0.1:8080/v1/projects/demo-nyx/databases/(default)/documents/${path}`, { headers: { Authorization: 'Bearer owner' } });
+  const r = await fetch(`http://127.0.0.1:8080/v1/projects/demo-kanni/databases/(default)/documents/${path}`, { headers: { Authorization: 'Bearer owner' } });
   return r.json();
 }

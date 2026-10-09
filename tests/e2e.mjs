@@ -1,4 +1,4 @@
-// NyxOS end-to-end tests (headless Chromium). Run with: npm run test:e2e
+// Kanni end-to-end tests (headless Chromium). Run with: npm run test:e2e
 // Chat/Voice sections need the Auth + Firestore emulators (the npm script starts them).
 import { serve, launch, newCtx, watch, check, section, results, allErrors, sleep, noOverflow, emulatorUp, resetEmulators, adminWrite, adminGet, BASE } from './lib.mjs';
 
@@ -40,7 +40,7 @@ await section('Boot', async () => {
     check(t < 1000, `${vp.width}px: boot screen gone in under 1 s`, `${Math.round(t)} ms`);
     check(!(await page.isVisible('#fatal')), `${vp.width}px: no fatal screen`);
     check(await page.$$eval('#icons .dicon', x => x.length) === 7, `${vp.width}px: 4 apps + 3 shortcuts on the desktop`);
-    check(await page.title() === 'NyxOS', `${vp.width}px: title is NyxOS`);
+    check(await page.title() === 'Kanni', `${vp.width}px: title is Kanni`);
     await shot(page, `boot-${vp.width}`);
     await ctx.close();
   }
@@ -150,7 +150,7 @@ await section('OS / Browser mode switch', async () => {
   check(await page.$eval('body', b => b.classList.contains('mode-browser')), 'mode persists across reload');
   await page.click('.br-tab.active .x'); await sleep(200);
   check(await page.$$eval('.br-tab', x => x.length) === 1, 'closing the last tab in Browser mode opens a fresh one');
-  await page.evaluate(() => window.Nyx.open('settings')); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings')); await sleep(300);
   check(!(await page.$eval('body', b => b.classList.contains('mode-browser'))), 'opening another app returns to the OS');
   await page.click('#mode-btn'); await sleep(200); await page.click('#mode-btn'); await sleep(200);
   check((await page.textContent('#mode-btn')).trim() === 'Switch to Browser', 'switches back');
@@ -182,12 +182,12 @@ await section('Browser', async () => {
   const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('[aria-label="Open in a new browser tab"]')]);
   check(popup.url() === 'https://example.com/', 'the toolbar Open-in-new-tab button opens the real page');
   await popup.close();
-  await page.fill('.br-addr input', 'nyx test query'); await page.press('.br-addr input', 'Enter'); await sleep(400);
-  check((await page.inputValue('.br-addr input')) === 'nyx test query', 'searches show the search words');
+  await page.fill('.br-addr input', 'kanni test query'); await page.press('.br-addr input', 'Enter'); await sleep(400);
+  check((await page.inputValue('.br-addr input')) === 'kanni test query', 'searches show the search words');
   await page.click('.br-nav button[aria-label=Back]'); await sleep(300);
   check((await page.inputValue('.br-addr input')) === 'example.com', 'back');
   await page.click('.br-nav button[aria-label=Forward]'); await sleep(300);
-  check((await page.inputValue('.br-addr input')) === 'nyx test query', 'forward');
+  check((await page.inputValue('.br-addr input')) === 'kanni test query', 'forward');
   await page.click('.br-new'); await sleep(200);
   check(await page.$$eval('.br-tab', x => x.length) === 2, 'new tab');
   check((await page.textContent('.ntp-recent')).includes('example.com'), 'recent sites list history');
@@ -211,7 +211,7 @@ await section('Browser', async () => {
 
 await section('Settings persist', async () => {
   const { ctx, page } = await open(DESK, BASE, 'settings');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'appearance' }));
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'appearance' }));
   await page.waitForSelector('.st-preview');
   await page.click('.seg button:has-text("Light")');
   check(await page.$eval('html', e => e.dataset.theme) === 'light', 'theme applies immediately');
@@ -237,9 +237,9 @@ await section('Settings persist', async () => {
   check(await page.$eval('html', e => e.dataset.theme) === 'light' && await page.$eval('body', e => e.dataset.wall) === 'night', 'and re-applied after reload');
   check(await page.isVisible('#launch-prompt'), 'Ask on launch prompt shows on load');
   await page.click('#launch-prompt button:has-text("Not now")'); await sleep(250);
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'data' }));
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'data' }));
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click('.srow:has-text("Export") button')]);
-  check(dl.suggestedFilename() === 'nyxos-settings.json', 'export downloads nyxos-settings.json');
+  check(dl.suggestedFilename() === 'kanni-settings.json', 'export downloads kanni-settings.json');
   await page.click('.srow:has-text("Reset settings") button'); await page.click('.srow:has-text("Reset settings") button');
   check(await page.$eval('html', e => e.dataset.theme) === 'dark' && await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).accent) === '#9db4ff', 'reset restores defaults (moonlight accent)');
   // Old data from the previous version carries over (snap: prefix, old default accent migrates).
@@ -268,7 +268,7 @@ await section('First-run Customize', async () => {
   check(await page.evaluate(() => localStorage.getItem('snap:customized')) === 'true', 'Skip sets the flag');
   await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));
   check(!(await page.$('.cz')), 'not shown again');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'appearance' }));
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'appearance' }));
   await page.click('[data-customize]');
   check(await page.isVisible('.cz') && (await page.textContent('.cz-foot')).includes('Cancel'), 'Settings › Appearance › Customize reopens it');
   await page.click('.cz .swatch[aria-label=Amber]');
@@ -301,13 +301,13 @@ await section('Open in about:blank', async () => {
   const [pop] = await Promise.all([page.waitForEvent('popup'), page.click('#launch-prompt .btn.primary')]);
   await pop.waitForLoadState();
   await sleep(1500);
-  const inner = pop.frames().find(f => /nyx-ab=1/.test(f.url()));
-  check(pop.url() === 'about:blank' && !!inner, 'opens about:blank with NyxOS in a full-screen frame');
+  const inner = pop.frames().find(f => /kanni-ab=1/.test(f.url()));
+  check(pop.url() === 'about:blank' && !!inner, 'opens about:blank with Kanni in a full-screen frame');
   check(inner && await inner.evaluate(() => !!document.querySelector('#dock') && !document.querySelector('#launch-prompt') && !document.querySelector('.cz')), 'the framed copy boots and never shows the prompt');
   check(inner && await inner.evaluate(() => { const r = window.frameElement.getBoundingClientRect(); return r.width === innerWidth || true; }), 'frame fills the tab');
   check(!(await page.isVisible('#launch-prompt')), 'prompt closes after opening');
   await pop.close();
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'launch' }));
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'launch' }));
   const [pop2] = await Promise.all([page.waitForEvent('popup'), page.click('.launch-card .btn.primary')]);
   check(pop2.url() === 'about:blank', 'Settings › Launch button opens it too');
   await pop2.close();
@@ -391,7 +391,7 @@ async function signUpUser(name, ctxOpts = {}) {
   if (ctxOpts.denyMic) await ctx.addInitScript(() => { navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('denied', 'NotAllowedError')); });
   const page = watch(await ctx.newPage(), name);
   await page.goto(EMU); await page.waitForFunction(() => !document.getElementById('boot'));
-  await page.evaluate(() => window.Nyx.open('chat'));
+  await page.evaluate(() => window.Kanni.open('chat'));
   await page.waitForSelector('.auth-card', { timeout: 15000 });
   await page.click('.auth-card [role=tab]:nth-child(2)');
   await page.fill('.auth-form input[autocomplete=username]', name);
@@ -411,7 +411,7 @@ if (!(await emulatorUp())) {
     const ctx = await newCtx(browser, DESK);
     const page = watch(await ctx.newPage(), 'auth');
     await page.goto(EMU); await page.waitForFunction(() => !document.getElementById('boot'));
-    await page.evaluate(() => window.Nyx.open('chat')); await page.waitForSelector('.auth-card');
+    await page.evaluate(() => window.Kanni.open('chat')); await page.waitForSelector('.auth-card');
     await shot(page, 'chat-auth');
     await page.click('.auth-card [role=tab]:nth-child(2)');
     const err = async () => { await page.waitForFunction(() => document.querySelector('.auth-form .msg')?.textContent); const t = await page.textContent('.auth-form .msg'); await page.evaluate(() => { document.querySelector('.auth-form .msg').textContent = ''; }); return t; };
@@ -434,12 +434,12 @@ if (!(await emulatorUp())) {
     await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));
     await page.waitForFunction(() => document.querySelector('#avatar-btn .avatar:not(.anon)'), null, { timeout: 15000 });
     check(true, 'stays signed in across reload');
-    await page.evaluate(() => window.Nyx.open('settings', { page: 'account' }));
+    await page.evaluate(() => window.Kanni.open('settings', { page: 'account' }));
     check((await page.textContent('.acct-card')).includes('Luna_7'), 'Settings › Account shows the account');
     await page.click('.srow:has-text("Sign out") button'); await page.click('.srow:has-text("Sign out") button');
     await page.waitForFunction(() => document.querySelector('#avatar-btn .avatar.anon'));
     check(true, 'sign out');
-    await page.evaluate(() => window.Nyx.open('chat')); await page.waitForSelector('.auth-card');
+    await page.evaluate(() => window.Kanni.open('chat')); await page.waitForSelector('.auth-card');
     await page.fill('.auth-form input[autocomplete=username]', 'luna_7'); await page.fill('.auth-form input[type=password]', 'wrong password'); await page.click('.auth-form button[type=submit]');
     check((await err()).includes('Wrong username or password'), 'wrong password message');
     await page.click('.auth-card [role=tab]:nth-child(2)');
@@ -467,8 +467,8 @@ if (!(await emulatorUp())) {
     check((await A.page.textContent('.chat-count')) === '0', 'remaining-characters counter');
     await A.page.fill('.chat-input', '');
     // Auto-scroll unless scrolled up.
-    const many = []; for (let i = 0; i < 40; i++) many.push({ update: { name: `projects/demo-nyx/databases/(default)/documents/messages/bulk${i}`, fields: { uid: { stringValue: 'bulk' }, name: { stringValue: 'bulk' }, text: { stringValue: `filler ${i}` }, createdAt: { timestampValue: new Date(Date.now() - 3600e3 + i * 1000).toISOString() } } } });
-    await fetch('http://127.0.0.1:8080/v1/projects/demo-nyx/databases/(default)/documents:commit', { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ writes: many }) });
+    const many = []; for (let i = 0; i < 40; i++) many.push({ update: { name: `projects/demo-kanni/databases/(default)/documents/messages/bulk${i}`, fields: { uid: { stringValue: 'bulk' }, name: { stringValue: 'bulk' }, text: { stringValue: `filler ${i}` }, createdAt: { timestampValue: new Date(Date.now() - 3600e3 + i * 1000).toISOString() } } } });
+    await fetch('http://127.0.0.1:8080/v1/projects/demo-kanni/databases/(default)/documents:commit', { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ writes: many }) });
     await sleep(800);
     await B.page.evaluate(() => { document.querySelector('.chat-list').scrollTop = 0; });
     await sleep(300);
@@ -492,10 +492,10 @@ if (!(await emulatorUp())) {
     await B.page.click('.chat-dialog button:has-text("Block")');
     await B.page.waitForFunction(() => ![...document.querySelectorAll('.chat-text')].some(p => p.textContent.includes('hello from orion')), null, { timeout: 8000 });
     check(true, 'block hides their messages');
-    await B.page.evaluate(() => window.Nyx.open('settings', { page: 'account' }));
+    await B.page.evaluate(() => window.Kanni.open('settings', { page: 'account' }));
     await B.page.waitForSelector('.srow:has-text("Orion") button:has-text("Unblock")');
     await B.page.click('.srow:has-text("Orion") button:has-text("Unblock")');
-    await B.page.evaluate(() => window.Nyx.open('chat'));
+    await B.page.evaluate(() => window.Kanni.open('chat'));
     await B.page.waitForSelector('.chat-text >> text=hello from orion', { timeout: 8000 });
     check(true, 'unblock from Settings › Account');
     check(!(await B.page.$('.chat-head .btn:has-text("Moderate"):visible')), 'non-admins have no Moderate button');
@@ -524,10 +524,10 @@ if (!(await emulatorUp())) {
     await B.page.waitForSelector('.chat-banned:visible', { timeout: 8000 });
     check(await B.page.isHidden('.chat-compose'), 'banned user sees it at once and cannot post');
     // Older messages on scroll.
-    const writes = []; for (let i = 0; i < 120; i++) writes.push({ update: { name: `projects/demo-nyx/databases/(default)/documents/messages/old${String(i).padStart(3, '0')}`, fields: { uid: { stringValue: 'old' }, name: { stringValue: 'archivist' }, text: { stringValue: `old ${i}` }, createdAt: { timestampValue: new Date(Date.now() - 86400e3 * 3 + i * 1000).toISOString() } } } });
-    await fetch('http://127.0.0.1:8080/v1/projects/demo-nyx/databases/(default)/documents:commit', { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ writes }) });
+    const writes = []; for (let i = 0; i < 120; i++) writes.push({ update: { name: `projects/demo-kanni/databases/(default)/documents/messages/old${String(i).padStart(3, '0')}`, fields: { uid: { stringValue: 'old' }, name: { stringValue: 'archivist' }, text: { stringValue: `old ${i}` }, createdAt: { timestampValue: new Date(Date.now() - 86400e3 * 3 + i * 1000).toISOString() } } } });
+    await fetch('http://127.0.0.1:8080/v1/projects/demo-kanni/databases/(default)/documents:commit', { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: JSON.stringify({ writes }) });
     await A.page.reload(); await A.page.waitForFunction(() => !document.getElementById('boot'));
-    await A.page.evaluate(() => window.Nyx.open('chat')); await A.page.waitForSelector('.chat-group');
+    await A.page.evaluate(() => window.Kanni.open('chat')); await A.page.waitForSelector('.chat-group');
     const n0 = await A.page.$$eval('.chat-msg', x => x.length);
     for (let i = 0; i < 8 && !(await A.page.$('.chat-start')); i++) { await A.page.evaluate(() => { document.querySelector('.chat-list').scrollTop = 0; }); await sleep(600); }
     const n1 = await A.page.$$eval('.chat-msg', x => x.length);
@@ -552,7 +552,7 @@ if (!(await emulatorUp())) {
       if (opts.denyMic) await ctx.addInitScript(() => { navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('denied', 'NotAllowedError')); });
       const page = watch(await ctx.newPage(), name);
       await page.goto(EMU); await page.waitForFunction(() => !document.getElementById('boot'));
-      await page.evaluate(() => window.Nyx.open('chat')); await page.waitForSelector('.auth-card', { timeout: 15000 });
+      await page.evaluate(() => window.Kanni.open('chat')); await page.waitForSelector('.auth-card', { timeout: 15000 });
       await page.click('.auth-card [role=tab]:nth-child(2)');
       await page.fill('.auth-form input[autocomplete=username]', name); await page.fill('.auth-form input[type=password]', 'correct horse'); await page.check('.auth-form input[type=checkbox]');
       await page.click('.auth-form button[type=submit]'); await page.waitForSelector('.chat-head', { timeout: 15000 });
@@ -600,7 +600,7 @@ if (!(await emulatorUp())) {
 // Expected browser-generated lines, not app errors:
 // - Chrome warns once per framed page that allow-scripts + allow-same-origin
 //   can escape a sandbox. The sandbox is kept so framed sites can't navigate
-//   NyxOS away (no allow-top-navigation).
+//   Kanni away (no allow-top-navigation).
 // - A deliberately wrong password makes Firebase Auth answer 400, which
 //   Chrome logs as a failed resource load.
 const expected = e => /can escape its sandboxing/.test(e) || (/^\[auth\] error: Failed to load resource: the server responded with a status of 400/.test(e));

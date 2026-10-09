@@ -36,7 +36,7 @@ await section('Personalization: live wallpaper + reduced motion + fonts', async 
   check(await page.$eval('#dots', c => !c.hidden), 'live wallpaper canvas is shown');
   check(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--font-ui').includes('Space Grotesk')), 'chosen font applied');
   // One backdrop at a time: switch to the dot field, canvas still present, live off.
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'desktop' })); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'desktop' })); await sleep(300);
   await page.click('.wall:has-text("Dot field")'); await sleep(300);
   check(await page.$eval('body', b => b.dataset.wall) === 'oled', 'switched to dot field');
   await ctx.close();
@@ -53,12 +53,12 @@ await section('Personalization: live wallpaper + reduced motion + fonts', async 
 
 await section('Personalization: custom wallpaper + auto accent', async () => {
   const { ctx, page } = await open(DESK, 'wall');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'desktop' })); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'desktop' })); await sleep(300);
   await page.setInputFiles('.srow input[type=file]', { name: 'w.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') });
   await sleep(600);
   check(await page.$eval('body', b => b.dataset.wall) === 'custom', 'custom wallpaper applied');
   check(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--custom-wall').startsWith('url(')), 'custom image stored and set');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'appearance' })); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'appearance' })); await sleep(300);
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).accent);
   await page.click('.srow:has-text("Accent from wallpaper") .switch'); await sleep(600);
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).accent);
@@ -68,7 +68,7 @@ await section('Personalization: custom wallpaper + auto accent', async () => {
 
 await section('Widgets', async () => {
   const { ctx, page } = await open(DESK, 'widgets');
-  await page.evaluate(() => window.Nyx.open('widgets')); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('widgets')); await sleep(300);
   for (const t of ['Clock', 'Calendar', 'Weather']) { await page.click(`.wgpick-row:has-text("${t}") button`); await sleep(150); }
   await page.evaluate(() => { for (const w of document.querySelectorAll('.win')) w.remove(); });
   await sleep(500);
@@ -85,7 +85,7 @@ await section('Widgets', async () => {
   await ctx.close();
 
   const m = await open(PHONE, 'widgets-m');
-  await m.page.evaluate(() => window.Nyx.open('widgets')); await sleep(200);
+  await m.page.evaluate(() => window.Kanni.open('widgets')); await sleep(200);
   await m.page.click('.wgpick-row:has-text("Clock") button'); await m.page.click('.wgpick-row:has-text("Calendar") button'); await sleep(200);
   await m.page.evaluate(() => { for (const w of document.querySelectorAll('.win')) w.remove(); document.body.classList.remove('has-win'); });
   await sleep(400);
@@ -96,7 +96,7 @@ await section('Widgets', async () => {
 await section('Multiple desktops', async () => {
   const { ctx, page } = await open(DESK, 'desk');
   const cur = () => page.evaluate(() => +document.body.dataset.desktop);
-  await page.evaluate(() => window.Nyx.open('browser')); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('browser')); await sleep(300);
   await page.click('#desktops .desk-pill.add'); await sleep(400);
   check(await page.$$eval('#desktops .desk-pill:not(.add)', x => x.length) === 2 && await cur() === 1, 'added a desktop and switched to it');
   check(await page.$eval('.win[data-app=browser]', w => w.classList.contains('off-desk')), 'window from desktop 1 is hidden');
@@ -112,17 +112,17 @@ await section('Multiple desktops', async () => {
 
 await section('Lock screen', async () => {
   const { ctx, page } = await open(DESK, 'lock');
-  await page.evaluate(() => window.Nyx.lock()); await sleep(300);
+  await page.evaluate(() => window.Kanni.lock()); await sleep(300);
   check(await page.isVisible('.lock') && await page.isVisible('.lock-hint'), 'locks with no PIN');
   await page.keyboard.press('Enter'); await sleep(300);
   check(!(await page.isVisible('.lock')), 'any key unlocks when there is no PIN');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'lock' })); await sleep(400);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'lock' })); await sleep(400);
   await page.click('.srow:has-text("PIN") button:has-text("Set a PIN")'); await sleep(200);
   await page.fill('.srow input[aria-label="New PIN"]', '2468');
   await page.fill('.srow input[aria-label="Confirm PIN"]', '2468');
   await page.click('.srow form button:has-text("Save")'); await sleep(400);
   check(await page.evaluate(() => { const l = JSON.parse(localStorage.getItem('snap:lock') || 'null'); return l && l.hash && l.len === 4; }), 'PIN stored as a salted hash with length');
-  await page.evaluate(() => window.Nyx.lock()); await sleep(300);
+  await page.evaluate(() => window.Kanni.lock()); await sleep(300);
   for (const d of '0000') await page.click(`.lock-key:has-text("${d}")`);
   await sleep(300);
   check((await page.textContent('.lock-msg')).includes('Wrong') && await page.isVisible('.lock'), 'wrong PIN is rejected');
@@ -130,7 +130,7 @@ await section('Lock screen', async () => {
   await sleep(400);
   check(!(await page.isVisible('.lock')), 'correct PIN unlocks');
   // idle setting persists
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'lock' })); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'lock' })); await sleep(300);
   await page.selectOption('.srow:has-text("Lock when idle") select', '15'); await sleep(200);
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).idleLock === 15), 'idle-lock setting persists as a number');
   await ctx.close();
@@ -138,7 +138,7 @@ await section('Lock screen', async () => {
 
 await section('Browser: bookmarks + recently closed', async () => {
   const { ctx, page } = await open(DESK, 'bm');
-  await page.evaluate(() => window.Nyx.open('browser')); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('browser')); await sleep(300);
   check(await page.isVisible('.br-bookmarks'), 'bookmarks bar visible');
   await page.fill('.br-addr input', 'example.com'); await page.press('.br-addr input', 'Enter'); await sleep(700);
   await page.click('.br-star'); await sleep(250);
@@ -153,7 +153,7 @@ await section('Browser: bookmarks + recently closed', async () => {
   await page.click('.icon-btn[aria-label="Recently closed tabs"]'); await sleep(200);
   check(await page.$('.br-menu') != null, 'recently-closed menu opens');
   await page.keyboard.press('Escape');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'browser' })); await sleep(300);
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'browser' })); await sleep(300);
   await page.click('.srow:has-text("Show bookmarks bar") .switch'); await sleep(200);
   check(await page.$eval('.br-bookmarks', b => b.hidden), 'bookmarks bar hides via setting');
   await ctx.close();
@@ -164,8 +164,8 @@ await section('Sounds + What’s new', async () => {
   await sleep(600);
   check(await page.isVisible('#whatsnew'), 'What’s new shows after a version change');
   await page.click('#whatsnew .btn'); await sleep(200);
-  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.2.0"', 'records the new version');
-  await page.evaluate(() => window.Nyx.open('settings', { page: 'sound' })); await sleep(300);
+  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.3.0"', 'records the new version');
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'sound' })); await sleep(300);
   await page.click('.srow:has-text("Test") button'); await sleep(150);
   await page.evaluate(() => { const r = document.querySelector('.range'); r.value = '65'; r.dispatchEvent(new Event('input', { bubbles: true })); }); await sleep(150);
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).volume === 0.65), 'volume persists');

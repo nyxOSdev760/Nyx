@@ -1,4 +1,4 @@
-/* Open NyxOS inside an about:blank tab, and the optional prompt on load. */
+/* Open Kanni inside an about:blank tab, and the optional prompt on load. */
 import { $, h } from './core.js';
 import { ICONS } from './icons.js';
 import { Settings } from './settings.js';
@@ -6,14 +6,14 @@ import { Notify } from './notify.js';
 
 /* ---------- Launch: open this site inside an about:blank tab ----------
    The new tab stays at about:blank and holds a full-screen iframe of this
-   page. The frame copy gets ?nyx-ab=1 and also checks whether it is framed,
+   page. The frame copy gets ?kanni-ab=1 and also checks whether it is framed,
    so it never shows the launch prompt again. */
 export const Launch = {
   framed: (() => {
     try { if (window.top !== window.self) return true; } catch { return true; }
-    try { const q = new URLSearchParams(location.search); return q.get('nyx-ab') === '1' || q.get('snap-ab') === '1'; } catch { return false; }
+    try { const q = new URLSearchParams(location.search); return ['kanni-ab', 'nyx-ab', 'snap-ab'].some(k => q.get(k) === '1'); } catch { return false; }
   })(),
-  frameUrl() { const u = new URL(location.href); u.hash = ''; u.searchParams.set('nyx-ab', '1'); return u.href; },
+  frameUrl() { const u = new URL(location.href); u.hash = ''; u.searchParams.set('kanni-ab', '1'); return u.href; },
   open() {
     let w = null;
     try { w = window.open('about:blank', '_blank'); } catch {}
@@ -63,7 +63,7 @@ export function showLaunchPrompt() {
     h('span', { class: 'lp-ico', svg: ICONS.window }),
     h('div', { class: 'lp-main' },
       h('div', null, h('b', { id: 'lp-title', text: 'Open in about:blank?' }),
-        h('p', { id: 'lp-desc', text: 'Runs NyxOS in a new tab whose address bar shows about:blank. You can turn this off in Settings › Launch.' }), msg),
+        h('p', { id: 'lp-desc', text: 'Runs Kanni in a new tab whose address bar shows about:blank. You can turn this off in Settings › Launch.' }), msg),
       h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', text: 'Not now', onclick: close }), openBtn)));
   card.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   document.body.append(card);
