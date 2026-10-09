@@ -44,10 +44,12 @@ export const Sfx = {
   play(name) {
     const m = vol();
     if (!m || !SOUNDS[name]) return;
+    // Don't create an AudioContext before the first user gesture: Chrome warns
+    // and it would start suspended. Remember the startup chime for that gesture.
+    if (!unlocked) { if (name === 'startup') pending = name; return; }
     const ac = ctx();
     if (!ac) return;
-    if (ac.state === 'suspended') { ac.resume().catch(() => {}); }
-    if (ac.state !== 'running') { if (name === 'startup') pending = name; return; }
+    if (ac.state === 'suspended') { ac.resume().catch(() => {}); if (name === 'startup') pending = name; return; }
     try { SOUNDS[name](ac, ac.currentTime + 0.001, 1); } catch {}
   },
   startup() { if (Settings.get('startupSound') !== false) this.play('startup'); },

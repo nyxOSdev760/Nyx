@@ -152,17 +152,14 @@ export const Widgets = {
   add(type) {
     if (!TYPES[type] || this.has(type)) return;
     const a = this.area();
-    const def = TYPES[type], gap = 16;
-    // Stack down a column on the right (clear of the left icon column),
-    // wrapping to the column to its left when it runs out of height.
-    let col = Math.max(8, a.width - def.w - 28), y = 28;
-    for (let guard = 0; guard < 8; guard++) {
-      const inCol = this.list.filter(w => Math.abs(w.x - col) < 6);
-      y = inCol.reduce((m, w) => Math.max(m, w.y + TYPES[w.type].h + gap), 28);
-      if (y + def.h + 8 <= a.height || col - def.w - gap < 8) break;
-      col -= def.w + gap;
-    }
-    this.list.push({ id: uid(), type, x: clamp(col, 8, Math.max(8, a.width - def.w - 8)), y: clamp(y, 8, Math.max(8, a.height - def.h - 8)), cfg: {} });
+    const def = TYPES[type], gap = 16, margin = 28;
+    // Right-align every widget to a shared right edge (clear of the left icon
+    // column) and stack down. Aligning on the right, not the left, keeps
+    // widgets of different widths in the same column.
+    const right = a.width - margin;
+    const y = this.list.filter(w => Math.abs((w.x + TYPES[w.type].w) - right) < 24)
+      .reduce((m, w) => Math.max(m, w.y + TYPES[w.type].h + gap), 28);
+    this.list.push({ id: uid(), type, x: clamp(right - def.w, 8, Math.max(8, a.width - def.w - 8)), y: clamp(y, 8, Math.max(8, a.height - def.h - 8)), cfg: {} });
     this.save(); this.render(); Bus.emit('widgets');
   },
   remove(type) { this.list = this.list.filter(w => w.type !== type); this.save(); this.render(); Bus.emit('widgets'); },

@@ -6,7 +6,8 @@
   "scripts": {
     "test:rules": "firebase emulators:exec --only firestore --project demo-nyx --config ../firebase.json \"node --test rules.test.mjs\"",
     "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-nyx --config ../firebase.json \"node e2e.mjs\"",
-    "test": "npm run test:rules && npm run test:e2e"
+    "test:features": "node phase7.mjs",
+    "test": "npm run test:rules && npm run test:e2e && npm run test:features"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",

@@ -39,7 +39,7 @@ await section('Boot', async () => {
     const t = await page.waitForFunction(() => !document.getElementById('boot') && performance.now(), null, { timeout: 5000 }).then(h => h.jsonValue());
     check(t < 1000, `${vp.width}px: boot screen gone in under 1 s`, `${Math.round(t)} ms`);
     check(!(await page.isVisible('#fatal')), `${vp.width}px: no fatal screen`);
-    check(await page.$$eval('#icons .dicon', x => x.length) === 6, `${vp.width}px: 3 apps + 3 shortcuts on the desktop`);
+    check(await page.$$eval('#icons .dicon', x => x.length) === 7, `${vp.width}px: 4 apps + 3 shortcuts on the desktop`);
     check(await page.title() === 'NyxOS', `${vp.width}px: title is NyxOS`);
     await shot(page, `boot-${vp.width}`);
     await ctx.close();
@@ -340,7 +340,7 @@ await section('Reduced motion', async () => {
 
 await section('Phone (390 px)', async () => {
   const { ctx, page } = await open(PHONE, BASE, 'phone');
-  check(await page.isVisible('#home-time') && await page.$$eval('#icons .dicon', x => x.length) === 6, 'home screen: clock and app grid');
+  check(await page.isVisible('#home-time') && await page.$$eval('#icons .dicon', x => x.length) === 7, 'home screen: clock and app grid');
   check(!(await noOverflow(page)), 'home screen: no horizontal overflow', await noOverflow(page));
   const small = await page.$$eval('#mode-btn, .bar .dock-item:not([hidden]), .st-btn, #icons .dicon', els => els.filter(e => e.getClientRects().length).map(e => { const r = e.getBoundingClientRect(); return [e.id || e.className, Math.round(r.width), Math.round(r.height)]; }).filter(([, w, h]) => w < 44 || h < 44));
   check(!small.length, 'touch targets are at least 44 px', JSON.stringify(small));
