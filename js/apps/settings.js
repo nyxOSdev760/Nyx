@@ -8,6 +8,7 @@ import { setCustomWallpaper, removeCustomWallpaper, hasCustomWallpaper } from '.
 import { History } from '../web.js';
 import { Customize } from '../customize.js';
 import { Launch } from '../launch.js';
+import { Lock } from '../lock.js';
 import { miniDesktop } from '../preview.js';
 import { lowPower } from '../dots.js';
 import { fmtTime } from '../shell.js';
@@ -36,9 +37,10 @@ registerApp({
       draw();
       return srow(title, desc, seg);
     };
-    const select = (key, title, desc, opts) => {
-      const s = h('select', { class: 'select', 'aria-label': title }, opts.map(([v, n]) => h('option', { value: v, text: n, selected: Settings.get(key) === v })));
-      s.addEventListener('change', () => { if (!save(key, s.value)) s.value = Settings.get(key); });
+    const select = (key, title, desc, opts, num = false) => {
+      const cur = Settings.get(key);
+      const s = h('select', { class: 'select', 'aria-label': title }, opts.map(([v, n]) => h('option', { value: v, text: n, selected: cur === v })));
+      s.addEventListener('change', () => { if (!save(key, num ? +s.value : s.value)) s.value = Settings.get(key); });
       return srow(title, desc, s);
     };
     const urlField = (key, title, desc, placeholder, emptyLabel) => {
@@ -214,6 +216,41 @@ registerApp({
           toggle('notifications', 'Show pop-ups', 'When off, notifications still collect behind the bell in the dock.'),
           srow('Test', 'Send a sample notification.', h('button', { class: 'btn', type: 'button', text: 'Send test', onclick: () => ctx.notify('Test notification', 'Notifications are working.') }))),
       ] },
+      { id: 'lock', name: 'Lock', icon: ICONS.lock, render: () => {
+        const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
+        const pinRow = h('div', { class: 'srow stack' });
+        const drawPin = () => {
+          const has = Lock.hasPin();
+          if (!Lock.pinSupported()) { pinRow.replaceChildren(lbl('PIN', 'This browser can’t store a PIN here (needs a secure page).')); return; }
+          const btns = h('div', { class: 'row' },
+            h('button', { class: 'btn', type: 'button', text: has ? 'Change PIN' : 'Set a PIN', onclick: setForm }),
+            has ? confirmBtn('Remove PIN', 'Tap again to remove', () => { Lock.clearPin(); msg.textContent = 'PIN removed.'; msg.className = 'msg ok'; drawPin(); }, 'btn danger') : null);
+          pinRow.replaceChildren(lbl('PIN', has ? 'A 4–6 digit PIN unlocks the screen. It’s a privacy screen, not real security.' : 'Add a 4–6 digit PIN to unlock. It’s a privacy screen, not real security.'), btns);
+        };
+        const setForm = () => {
+          const pin = h('input', { class: 'field', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '6', placeholder: '4–6 digits', 'aria-label': 'New PIN', style: 'flex:1' });
+          const pin2 = h('input', { class: 'field', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '6', placeholder: 'Confirm', 'aria-label': 'Confirm PIN', style: 'flex:1' });
+          [pin, pin2].forEach(i => i.addEventListener('input', () => { i.value = i.value.replace(/\D/g, '').slice(0, 6); }));
+          const form = h('form', { class: 'row nowrap' }, pin, pin2,
+            h('button', { class: 'btn primary', type: 'submit', text: 'Save' }),
+            h('button', { class: 'btn', type: 'button', text: 'Cancel', onclick: drawPin }));
+          form.addEventListener('submit', async e => {
+            e.preventDefault();
+            if (pin.value !== pin2.value) { msg.textContent = 'The two PINs don’t match.'; msg.className = 'msg err'; return; }
+            try { await Lock.setPin(pin.value); msg.textContent = 'PIN set.'; msg.className = 'msg ok'; drawPin(); }
+            catch (err) { msg.textContent = err.message; msg.className = 'msg err'; }
+          });
+          pinRow.replaceChildren(lbl('PIN', 'Enter a 4–6 digit PIN, twice.'), form);
+          setTimeout(() => pin.focus(), 30);
+        };
+        drawPin();
+        return [
+          head('Lock', 'A lock screen with a clock over your wallpaper. The PIN is a privacy screen, not real security.'),
+          group('Lock now', srow('Lock screen', 'Blur the desktop behind a clock.', h('button', { class: 'btn', type: 'button', onclick: () => Lock.lock() }, h('span', { svg: ICONS.lock }), 'Lock now'))),
+          group('Auto-lock', select('idleLock', 'Lock when idle', 'Lock automatically after no activity.', [[0, 'Off'], [5, 'After 5 min'], [15, 'After 15 min'], [30, 'After 30 min']], true)),
+          group('PIN', pinRow, msg),
+        ];
+      } },
       { id: 'data', name: 'Data', icon: ICONS.db, render: () => {
         const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
         const file = h('input', { type: 'file', accept: 'application/json,.json', hidden: true });

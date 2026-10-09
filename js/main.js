@@ -15,6 +15,7 @@ import { initShell, Mode } from './shell.js';
 import { Customize } from './customize.js';
 import { showLaunchPrompt } from './launch.js';
 import { Widgets } from './widgets.js';
+import { Lock } from './lock.js';
 import './apps/browser.js';
 import './apps/settings.js';
 import './apps/widgets.js';
@@ -41,6 +42,7 @@ try {
   WM.initDesktops();
   initShell();
   try { Widgets.init(); } catch (e) { console.error('Widgets disabled:', e); }
+  try { Lock.initIdle(); } catch (e) { console.error('Idle lock disabled:', e); }
 
   /* One canvas (#dots), one render loop: either the interactive dot field or a
      live wallpaper is active, never both. Custom/static wallpapers use neither. */
@@ -101,6 +103,7 @@ try {
   window.Nyx = window.SNAP = Object.freeze({
     registerApp, registerShortcut, mode: m => Mode.set(m), open: (id, a) => WM.open(id, a),
     notify: (t, b) => Notify.push({ title: t, body: b }), net: BrowserNet, settings: { get: k => Settings.get(k) },
+    lock: () => Lock.lock(),
   });
   state.booted = true;
   boot.done();

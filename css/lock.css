@@ -1,0 +1,35 @@
+/* Lock screen */
+.lock{position:fixed;inset:0;z-index:9800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-10);padding:calc(var(--sp-10) + var(--safe-t)) var(--sp-5) calc(var(--sp-10) + var(--safe-b));background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(40px) saturate(1.2);backdrop-filter:blur(40px) saturate(1.2);animation:lockIn var(--dur-3) var(--ease-out)}
+.lock:focus{outline:none}
+.lock.out{opacity:0;transition:opacity var(--dur-2) var(--ease-out)}
+@keyframes lockIn{from{opacity:0;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
+.lock-clock{text-align:center;color:#fff}
+.lock-time{font-family:var(--font-display);font-size:clamp(72px,14vw,140px);line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.lock-date{margin-top:var(--sp-2);font-size:var(--fs-lg);color:rgba(255,255,255,.72)}
+.lock-card{display:flex;flex-direction:column;align-items:center;gap:var(--sp-5)}
+.lock-mark{color:var(--accent)}.lock-mark .mark{width:30px;height:30px}
+.lock-pin{display:flex;flex-direction:column;align-items:center;gap:var(--sp-4)}
+.lock-hint{color:rgba(255,255,255,.8);font-size:var(--fs-base);padding:var(--sp-3) var(--sp-5);border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+.lock-hint:hover{background:rgba(255,255,255,.09)}
+.lock-dots{display:flex;gap:var(--sp-3)}
+.lock-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);transition:background var(--dur-1) var(--ease-out),border-color var(--dur-1) var(--ease-out),transform var(--dur-1) var(--ease-spring)}
+.lock-dot.on{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+.lock-msg{min-height:18px;color:#ff9a9a;font-size:var(--fs-md)}.lock-msg:empty{min-height:18px}
+.lock-pad{display:grid;grid-template-columns:repeat(3,72px);gap:var(--sp-3)}
+.lock-pad.shake{animation:lockShake .4s}
+@keyframes lockShake{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(5px)}50%{transform:translateX(-7px)}}
+.lock-key{height:72px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:26px;font-weight:500;display:grid;place-items:center;transition:background var(--dur-1) var(--ease-out),transform var(--dur-1) var(--ease-spring)}
+.lock-key:hover{background:rgba(255,255,255,.12)}
+.lock-key:active{transform:scale(.93);background:rgba(255,255,255,.18)}
+.lock-key .ico{width:24px;height:24px;color:#fff}
+.lock-actions{display:flex;gap:var(--sp-2)}
+.lock-enter{min-width:120px}
+.lock-forgot{color:rgba(255,255,255,.55);font-size:var(--fs-sm);padding:var(--sp-2)}
+.lock-forgot:hover{color:rgba(255,255,255,.85);text-decoration:underline}
+/* Everything under the lock is inert; hide the dock etc. behind the blur. */
+body.locked{overflow:hidden}
+@media (max-width:720px){
+  .lock{gap:var(--sp-8)}
+  .lock-pad{grid-template-columns:repeat(3,64px)}
+  .lock-key{height:64px;font-size:24px}
+}

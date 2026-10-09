@@ -8,6 +8,7 @@ import { Notify, reportRuntime } from './notify.js';
 import { Settings } from './settings.js';
 import { Shortcuts, shortcutTile } from './shortcuts.js';
 import { Account } from './account.js';
+import { Lock } from './lock.js';
 
 /* ---------- Mode: OS desktop or Browser only ---------- */
 export const Mode = {
@@ -148,16 +149,19 @@ function renderAccountPanel() {
   const u = Account.user;
   const body = $('#account-body');
   const open = () => { togglePanel('#account-panel', false); WM.open('chat'); };
+  const lockRow = h('button', { class: 'btn', type: 'button', onclick: () => { togglePanel('#account-panel', false); Lock.lock(); } }, h('span', { svg: ICONS.lock }), 'Lock screen');
   if (u) {
     body.replaceChildren(h('div', { class: 'acct' },
       h('div', { class: 'acct-id' }, Account.avatar(u, 'lg'), h('div', null, h('b', { text: u.name }), h('small', { text: 'Signed in' }))),
       h('div', { class: 'row' },
         h('button', { class: 'btn', type: 'button', onclick: open }, h('span', { svg: ICONS.chat }), 'Open Chat'),
-        h('button', { class: 'btn', type: 'button', onclick: async () => { togglePanel('#account-panel', false); await Account.signOut(); } }, h('span', { svg: ICONS.logout }), 'Sign out'))));
+        h('button', { class: 'btn', type: 'button', onclick: async () => { togglePanel('#account-panel', false); await Account.signOut(); } }, h('span', { svg: ICONS.logout }), 'Sign out')),
+      h('div', { class: 'row' }, lockRow)));
   } else {
     body.replaceChildren(h('div', { class: 'acct' },
       h('div', { class: 'acct-id' }, Account.avatar(null, 'lg'), h('div', null, h('b', { text: 'Guest' }), h('small', { text: Account.available() ? 'Sign in to use Chat and Voice.' : 'Accounts aren’t set up on this site.' }))),
-      Apps.has('chat') ? h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: open }, h('span', { svg: ICONS.login }), Account.available() ? 'Sign in or sign up' : 'Open Chat')) : null));
+      Apps.has('chat') ? h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: open }, h('span', { svg: ICONS.login }), Account.available() ? 'Sign in or sign up' : 'Open Chat')) : null,
+      h('div', { class: 'row' }, lockRow)));
   }
 }
 

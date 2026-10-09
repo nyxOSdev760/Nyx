@@ -110,6 +110,7 @@ export const SCHEMA = {
   proxyPrefix: { def: '', valid: v => v === '' || isHttpUrl(v) },
   notifications: { def: true, valid: bool },
   askLaunch: { def: false, valid: bool },
+  idleLock: { def: 0, valid: v => [0, 5, 15, 30].includes(v) },
 };
 
 const storageWarning = () => Notify.push({ title: 'Settings not saved', body: 'This browser is blocking storage. Changes last until you reload.' });
