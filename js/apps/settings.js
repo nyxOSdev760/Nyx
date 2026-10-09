@@ -184,6 +184,7 @@ registerApp({
             urlField('homepage', 'Home page', 'Leave empty to use the new tab page.', 'https://example.com', 'Use new tab')),
           group('History',
             toggle('saveHistory', 'Save browsing history', 'Stored only in this browser. Feeds the Recent list on new tabs.'),
+            toggle('showBookmarks', 'Show bookmarks bar', 'The strip of bookmarks under the browser toolbar.'),
             srow('Clear history', `${History.list().length} saved pages.`,
               h('div', { class: 'row' }, histMsg, confirmBtn('Clear', 'Tap again to clear', () => { History.clear(); Bus.emit('settings', { key: 'history' }); histMsg.textContent = 'History cleared.'; histMsg.className = 'msg ok'; })))),
           group('Connection',

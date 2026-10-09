@@ -4,7 +4,7 @@ import { h, uid, isHttpUrl, isMobile, Bus } from '../core.js';
 import { ICONS } from '../icons.js';
 import { registerApp } from '../apps.js';
 import { Settings, ENGINES, BrowserNet } from '../settings.js';
-import { History, parseInput, displayUrl, labelFor, hostOf, NEWTAB } from '../web.js';
+import { History, Bookmarks, parseInput, displayUrl, labelFor, hostOf, NEWTAB } from '../web.js';
 import { Shortcuts, shortcutTile, favicon } from '../shortcuts.js';
 import { Mode, greeting, fmtTime } from '../shell.js';
 import { Account } from '../account.js';
@@ -36,7 +36,9 @@ registerApp({
     const homeBtn = h('button', { class: 'icon-btn opt', type: 'button', 'aria-label': 'Home', title: 'Home', svg: ICONS.home, onclick: ctx.guard(() => goHome()) });
     const addrIcon = h('span', { class: 'br-addr-ico', svg: ICONS.search });
     const addr = h('input', { type: 'text', inputmode: 'url', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Address or search', placeholder: 'Search or enter address', enterkeyhint: 'go' });
-    const addrForm = h('form', { class: 'br-addr', role: 'search' }, addrIcon, addr);
+    const starBtn = h('button', { class: 'br-star', type: 'button', 'aria-label': 'Bookmark this page', title: 'Bookmark this page', svg: ICONS.star, onclick: ctx.guard(() => toggleBookmark()) });
+    const addrForm = h('form', { class: 'br-addr', role: 'search' }, addrIcon, addr, starBtn);
+    const recentBtn = h('button', { class: 'icon-btn opt', type: 'button', 'aria-label': 'Recently closed tabs', title: 'Recently closed tabs', 'aria-haspopup': 'menu', svg: ICONS.history, onclick: ctx.guard(e => recentMenu(e.currentTarget)) });
     const extBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Open in a new browser tab', title: 'Open in a new browser tab', svg: ICONS.external, onclick: ctx.guard(() => openExternal()) });
     const fsBtn = h('button', { class: 'icon-btn opt', type: 'button', 'aria-label': 'Full screen', title: 'Full screen', svg: ICONS.expand, onclick: ctx.guard(() => toggleFs()) });
     if (!document.fullscreenEnabled) fsBtn.hidden = true;
@@ -44,11 +46,12 @@ registerApp({
     const status = h('span', { class: 'sr', role: 'status', 'aria-live': 'polite' });
     const hint = h('div', { class: 'br-hint', role: 'note' });
     const views = h('div', { class: 'br-views' });
+    const bookmarksBar = h('div', { class: 'br-bookmarks', role: 'toolbar', 'aria-label': 'Bookmarks' });
 
     root.append(h('div', { class: 'br' },
       h('div', { class: 'br-top' }, tabsEl, newBtn),
-      h('div', { class: 'br-bar' }, h('div', { class: 'br-nav' }, backBtn, fwdBtn, reloadBtn, homeBtn), addrForm, h('div', { class: 'br-nav' }, extBtn, fsBtn), progress),
-      hint, status, views));
+      h('div', { class: 'br-bar' }, h('div', { class: 'br-nav' }, backBtn, fwdBtn, reloadBtn, homeBtn), addrForm, h('div', { class: 'br-nav' }, recentBtn, extBtn, fsBtn), progress),
+      bookmarksBar, hint, status, views));
 
     addrForm.addEventListener('submit', ctx.guard(e => {
       e.preventDefault();
@@ -64,6 +67,10 @@ registerApp({
       if (mod && e.key.toLowerCase() === 'l') { e.preventDefault(); addr.focus(); }
       if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      // Reopen last closed tab: Alt+Shift+T (the real browser uses Ctrl+Shift+T).
+      if (e.altKey && e.shiftKey && e.key.toLowerCase() === 't') { e.preventDefault(); reopenClosed(); }
+      // Bookmark the page: Ctrl/Cmd+D.
+      if (mod && !e.shiftKey && e.key.toLowerCase() === 'd') { e.preventDefault(); toggleBookmark(); }
     });
     ctx.el.addEventListener('keydown', onKey);
 
@@ -80,9 +87,12 @@ registerApp({
       if (activate && cur(tab) === NEWTAB) setTimeout(() => { const q = tab.view.querySelector('input'); if (q && !isMobile()) q.focus(); }, 50);
       return tab;
     }
+    const closed = [];   // recently closed tabs this session: {url, title}
     function closeTab(tab) {
       const i = tabs.indexOf(tab);
       if (i < 0) return;
+      const u = cur(tab);
+      if (isHttpUrl(u)) { closed.unshift({ url: u, title: tab.title || labelFor(u) }); closed.length = Math.min(closed.length, 10); }
       clearTimeout(tab.timer);
       if (tab.frame) tab.frame.src = 'about:blank';
       tab.view.remove();
@@ -90,6 +100,14 @@ registerApp({
       if (!tabs.length) { if (Mode.current === 'browser') newTab(); else ctx.close(); return; }
       if (active === tab) select(tabs[Math.min(i, tabs.length - 1)]);
       else render();
+    }
+    function reopenClosed() {
+      const last = closed.shift();
+      if (last) newTab(last.url); else ctx.notify('Nothing to reopen', 'No recently closed tabs.');
+    }
+    function recentMenu(anchor) {
+      brMenu(anchor, closed.length ? closed.map(c => ({ icon: siteIcon(c.url), label: c.title || hostOf(c.url), run: () => { const i = closed.indexOf(c); if (i >= 0) closed.splice(i, 1); newTab(c.url); } }))
+        : [{ label: 'No recently closed tabs', disabled: true }]);
     }
     function select(tab) {
       active = tab;
@@ -208,6 +226,53 @@ registerApp({
               : h('p', { class: 'ntp-note', text: Settings.get('saveHistory') ? 'Sites you visit will show up here.' : 'History is off. Turn it on in Settings › Browser to see recent sites here.' }))));
     }
 
+    /* ---------- Bookmarks ---------- */
+    function toggleBookmark() {
+      const u = cur(active);
+      if (!isHttpUrl(u)) { ctx.notify('Nothing to bookmark', 'Open a web page first.'); return; }
+      Bookmarks.toggle(u, active.title || labelFor(u));
+    }
+    function renderBookmarks() {
+      const on = Settings.get('showBookmarks');
+      bookmarksBar.hidden = !on;
+      if (!on) return;
+      const list = Bookmarks.list();
+      if (!list.length) { bookmarksBar.replaceChildren(h('span', { class: 'br-bm-empty', text: 'Bookmark a page with the star to pin it here.' })); return; }
+      bookmarksBar.replaceChildren(...list.map((b, idx) => {
+        const el = h('button', { class: 'br-bm', type: 'button', draggable: 'true', title: b.title + ' — ' + b.url, 'data-i': idx, onclick: ctx.guard(() => navigate(active, { kind: 'web', url: b.url })) },
+          siteIcon(b.url), h('span', { class: 'br-bm-t', text: b.title }));
+        el.addEventListener('contextmenu', e => { e.preventDefault(); bookmarkMenu(el, b); });
+        let lp = 0;
+        el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') lp = setTimeout(() => bookmarkMenu(el, b), 550); });
+        el.addEventListener('pointerup', () => clearTimeout(lp));
+        el.addEventListener('pointercancel', () => clearTimeout(lp));
+        el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(idx)); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); });
+        el.addEventListener('dragend', () => el.classList.remove('dragging'));
+        el.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+        el.addEventListener('drop', e => { e.preventDefault(); const from = +e.dataTransfer.getData('text/plain'); if (!isNaN(from) && from !== idx) Bookmarks.reorder(from, idx); });
+        return el;
+      }));
+    }
+    function bookmarkMenu(anchor, b) {
+      brMenu(anchor, [
+        { icon: h('span', { class: 'site-ico', svg: ICONS.external }), label: 'Open', run: () => navigate(active, { kind: 'web', url: b.url }) },
+        { icon: h('span', { class: 'site-ico', svg: ICONS.sliders }), label: 'Rename', run: () => { const name = prompt('Bookmark name', b.title); if (name != null) Bookmarks.rename(b.url, name.trim() || b.title); } },
+        { icon: h('span', { class: 'site-ico', svg: ICONS.trash }), label: 'Delete', danger: true, run: () => Bookmarks.remove(b.url) },
+      ]);
+    }
+    /* A small floating menu used by bookmarks and recently-closed. */
+    function brMenu(anchor, items) {
+      root.querySelectorAll('.br-menu').forEach(m => m.remove());
+      const r = anchor.getBoundingClientRect(), base = root.getBoundingClientRect();
+      const menu = h('div', { class: 'br-menu', role: 'menu' }, items.map(it => h('button', { class: 'br-menu-item' + (it.danger ? ' danger' : ''), type: 'button', role: 'menuitem', disabled: it.disabled || false, onclick: () => { menu.remove(); if (it.run) it.run(); } }, it.icon || null, h('span', { class: 'br-menu-t', text: it.label }))));
+      root.append(menu);
+      menu.style.top = Math.round(Math.min(r.bottom - base.top + 4, base.height - menu.offsetHeight - 8)) + 'px';
+      menu.style.left = Math.round(Math.min(r.left - base.left, base.width - menu.offsetWidth - 8)) + 'px';
+      const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('pointerdown', close, true); } };
+      setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+      const first = menu.querySelector('button:not([disabled])'); if (first) first.focus();
+    }
+
     function render() {
       tabsEl.replaceChildren(...tabs.map(t => {
         const isA = t === active, url = cur(t);
@@ -226,6 +291,12 @@ registerApp({
       extBtn.disabled = !isHttpUrl(url);
       if (document.activeElement !== addr) addr.value = labelFor(url);
       addrIcon.innerHTML = url && url.startsWith('https://') ? ICONS.lock : ICONS.search;
+      const marked = isHttpUrl(url) && Bookmarks.has(url);
+      starBtn.disabled = !isHttpUrl(url);
+      starBtn.classList.toggle('on', marked);
+      starBtn.innerHTML = marked ? ICONS.starFill : ICONS.star;
+      starBtn.setAttribute('aria-label', marked ? 'Remove bookmark' : 'Bookmark this page');
+      starBtn.title = marked ? 'Remove bookmark' : 'Bookmark this page';
       // Restart the progress animation for each new load.
       const loading = !!(t && t.loading);
       if (loading && !progress.classList.contains('on')) { progress.classList.remove('done'); void progress.offsetWidth; progress.classList.add('on'); }
@@ -245,11 +316,14 @@ registerApp({
     const refreshNewTabs = () => tabs.filter(t => cur(t) === NEWTAB && !t.error).forEach(renderView);
     off.push(Bus.on('settings', ({ key }) => {
       if (['searchEngine', 'saveHistory', '*', 'history', 'clock24'].includes(key)) refreshNewTabs();
+      if (['showBookmarks', '*'].includes(key)) renderBookmarks();
       render();
     }));
+    off.push(Bus.on('bookmarks', () => { renderBookmarks(); render(); }));
     off.push(Bus.on('account', refreshNewTabs));
     off.push(Bus.on('tick', d => { for (const el of root.querySelectorAll('.ntp-time')) el.textContent = fmtTime(d, false); }));
 
+    renderBookmarks();
     newTab((ctx.args && ctx.args.url) || (Settings.get('homepage') || undefined));
     return {
       handleArgs: (a) => { if (a && a.url) newTab(a.url); },

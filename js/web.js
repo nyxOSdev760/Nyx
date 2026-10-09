@@ -1,5 +1,5 @@
 /* Browser helpers shared by the Browser and Settings apps: history and address parsing. */
-import { Store, isHttpUrl, hostOf } from './core.js';
+import { Store, isHttpUrl, hostOf, Bus } from './core.js';
 import { Settings, ENGINES } from './settings.js';
 import { Shortcuts } from './shortcuts.js';
 
@@ -14,6 +14,18 @@ export const History = {
     Store.set('history', list.slice(0, 200));
   },
   clear() { Store.remove('history'); },
+};
+
+/* ---------- Bookmarks (persisted) ---------- */
+export const Bookmarks = {
+  list() { const v = Store.get('bookmarks', []); return Array.isArray(v) ? v.filter(x => x && isHttpUrl(x.url)).map(x => ({ url: x.url, title: String(x.title || '').slice(0, 120) })) : []; },
+  save(list) { Store.set('bookmarks', list.slice(0, 100)); Bus.emit('bookmarks'); },
+  has(url) { return this.list().some(b => b.url === url); },
+  add(url, title) { if (!isHttpUrl(url) || this.has(url)) return; const l = this.list(); l.push({ url, title: String(title || hostOf(url)).slice(0, 120) }); this.save(l); },
+  remove(url) { this.save(this.list().filter(b => b.url !== url)); },
+  toggle(url, title) { this.has(url) ? this.remove(url) : this.add(url, title); return this.has(url); },
+  rename(url, title) { const l = this.list(); const b = l.find(x => x.url === url); if (b) { b.title = String(title || hostOf(url)).slice(0, 120); this.save(l); } },
+  reorder(from, to) { const l = this.list(); if (from < 0 || from >= l.length || to < 0 || to >= l.length) return; const [m] = l.splice(from, 1); l.splice(to, 0, m); this.save(l); },
 };
 
 /* ---------- Browser input parsing ---------- */

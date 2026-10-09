@@ -105,6 +105,7 @@ export const SCHEMA = {
   searchEngine: { def: 'duckduckgo', valid: v => Object.prototype.hasOwnProperty.call(ENGINES, v) },
   homepage: { def: '', valid: v => v === '' || isHttpUrl(v) },
   saveHistory: { def: true, valid: bool },
+  showBookmarks: { def: true, valid: bool },
   embedHint: { def: true, valid: bool },
   transport: { def: 'direct', valid: v => Object.prototype.hasOwnProperty.call(BrowserNet.transports, v) },
   proxyPrefix: { def: '', valid: v => v === '' || isHttpUrl(v) },
