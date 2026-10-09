@@ -295,3 +295,25 @@ body.mode-browser .win[data-app="browser"] .titlebar,body.mode-browser .win[data
   #launch-prompt{bottom:calc(var(--dock-h) + var(--sp-5) + var(--safe-b))}
   #toasts{left:var(--sp-3);right:var(--sp-3);width:auto}
 }
+
+/* First-run tips tour */
+#tour{position:fixed;inset:0;z-index:9350;animation:fadeIn var(--dur-2) var(--ease-out)}
+#tour.out{opacity:0;transition:opacity var(--dur-2) var(--ease-out)}
+.tour-hole{position:fixed;border-radius:var(--r-lg);box-shadow:0 0 0 2px var(--accent),0 0 0 200vmax rgba(0,0,0,.6);pointer-events:none;transition:left var(--dur-3) var(--ease-out),top var(--dur-3) var(--ease-out),width var(--dur-3) var(--ease-out),height var(--dur-3) var(--ease-out),box-shadow var(--dur-2) var(--ease-out)}
+.tour-hole.off{left:50%!important;top:50%!important;width:0!important;height:0!important;box-shadow:0 0 0 0 transparent,0 0 0 200vmax rgba(0,0,0,.6)}
+.tour-card{position:fixed;width:min(340px,calc(100vw - 32px));padding:var(--sp-4) var(--sp-5) var(--sp-4);border-radius:var(--r-lg);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);color:var(--text)}
+.tour-card.center{left:50%;top:50%;transform:translate(-50%,-50%)}
+.tour-card.in{animation:panelIn var(--dur-3) var(--ease-spring)}
+.tour-card.center.in{animation:tourCenterIn var(--dur-3) var(--ease-spring)}
+@keyframes tourCenterIn{from{opacity:0;transform:translate(-50%,calc(-50% + 8px)) scale(.98)}}
+.tour-top{display:flex;align-items:center;justify-content:space-between;min-height:30px;margin-bottom:var(--sp-1)}
+.tour-count{color:var(--text-3);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.tour-skip{margin-right:calc(var(--sp-2) * -1)}
+.tour-card h2{margin:0 0 var(--sp-1);font-size:var(--fs-lg);font-weight:600}
+.tour-card p{margin:0 0 var(--sp-4);color:var(--text-2);font-size:var(--fs-md);line-height:1.5}
+.tour-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+.tour-foot .row{display:flex;gap:var(--sp-2)}
+.tour-dots{display:flex;gap:5px}
+.tour-dots i{width:6px;height:6px;border-radius:3px;background:var(--line-3);transition:width var(--dur-2) var(--ease-spring),background var(--dur-2) var(--ease-out)}
+.tour-dots i.on{width:16px;background:var(--accent)}
+#tour.still,#tour.still *{animation:none!important;transition:none!important}

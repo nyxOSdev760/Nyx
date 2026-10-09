@@ -2,9 +2,8 @@
 
 const svg = (paths) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
 
-/* The Kanni mark: a pixel invader, 11×8 pixels drawn 2 units each. */
-export const INVADER = 'M5 4h2v2h-2zM17 4h2v2h-2zM7 6h2v2h-2zM15 6h2v2h-2zM5 8h14v2h-14zM3 10h4v2h-4zM9 10h6v2h-6zM17 10h4v2h-4zM1 12h22v2h-22zM1 14h2v2h-2zM5 14h14v2h-14zM21 14h2v2h-2zM1 16h2v2h-2zM5 16h2v2h-2zM17 16h2v2h-2zM21 16h2v2h-2zM7 18h4v2h-4zM13 18h4v2h-4z';
-export const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" shape-rendering="crispEdges" d="${INVADER}"/></svg>`;
+/* The Kanni mark: the 👾 emoji, in an SVG so it sizes like the other marks. */
+export const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="21" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">👾</text></svg>`;
 const CRESCENT = 'M11.39 3.02A9 9 0 1 0 20.63 14.57A7.5 7.5 0 0 1 11.39 3.02Z';
 
 export const ICONS = {
@@ -65,5 +64,5 @@ export const ICONS = {
   sparkle: svg('<path d="M12 4c.6 3.9 2.1 5.4 6 6-3.9.6-5.4 2.1-6 6-.6-3.9-2.1-5.4-6-6 3.9-.6 5.4-2.1 6-6Z"/>'),
 };
 
-/* Wordmark: "Kanni" in the display face. */
+/* Wordmark: "Kanni" in the UI face. */
 export const WORDMARK = '<span class="wordmark" aria-label="Kanni"><span class="wm-name" aria-hidden="true">Kanni</span></span>';

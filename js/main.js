@@ -12,7 +12,7 @@ import { WALLPAPERS } from './settings.js';
 import { accentFromCanvas } from './accent.js';
 import { IDB } from './idb.js';
 import { initShell, Mode } from './shell.js';
-import { Customize } from './customize.js';
+import { Tour } from './tour.js';
 import { showLaunchPrompt } from './launch.js';
 import { Widgets } from './widgets.js';
 import { Lock } from './lock.js';
@@ -114,11 +114,11 @@ try {
   setTimeout(() => { try { Account.init(); } catch (e) { console.error(e); } }, 50);
   try { Sfx.startup(); } catch (e) { console.error(e); }
 
-  // First run: the customize screen, then (if turned on) the about:blank
-  // prompt, then — on an update — the What's new notes.
+  // First run: the tips tour, then (if turned on) the about:blank prompt,
+  // then — on an update — the What's new notes.
   try {
     const afterLaunch = () => { try { WhatsNew.maybeShow(); } catch (e) { console.error(e); } };
-    if (!Store.get('customized', false)) Customize.open({ first: true, onClose: () => { showLaunchPrompt(); afterLaunch(); } });
+    if (Tour.shouldShow()) Tour.open({ onClose: () => { showLaunchPrompt(); afterLaunch(); } });
     else { showLaunchPrompt(); afterLaunch(); }
-  } catch (e) { console.error('Customize/launch skipped:', e); }
+  } catch (e) { console.error('Tour/launch skipped:', e); }
 } catch (err) { boot.fatal(err); }

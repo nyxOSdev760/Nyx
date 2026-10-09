@@ -10,7 +10,8 @@ export const APP_VERSION = '1.3.0';
 /* Newest first. Each: { v, date, notes:[...] } */
 export const CHANGELOG = [
   { v: '1.3.0', date: '2026-10', notes: [
-    'NyxOS is now Kanni 👾, with a new pixel mark. Your settings, data and account carry over.',
+    'NyxOS is now Kanni 👾. Your settings, data and account carry over.',
+    'New visitors get a quick tips tour. Replay it from Settings › About.',
   ] },
   { v: '1.2.0', date: '2026-10', notes: [
     'Desktop widgets: Clock, Weather and Calendar, with a widget picker.',

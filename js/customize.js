@@ -1,8 +1,7 @@
-/* Customize screen: shown full-screen on first visit, and from
-   Settings › Appearance. It edits a draft of the look and previews it live
-   (on the whole UI and on a mini desktop). Done saves the draft; Skip or
-   Cancel restores the saved look. Both set the 'customized' flag, so the
-   first-run screen doesn't come back. Works with storage blocked. */
+/* Customize screen, opened from Settings › Appearance. It edits a draft of
+   the look and previews it live (on the whole UI and on a mini desktop).
+   Done saves the draft; Cancel restores the saved look. Works with storage
+   blocked. */
 import { $, $$, h, Store, Bus } from './core.js';
 import { ICONS, MARK, WORDMARK } from './icons.js';
 import { Settings, WALLPAPERS, ACCENTS, FONTS, PRESETS, applyLook, motionOff, resolveTheme } from './settings.js';
@@ -16,7 +15,7 @@ export const LOOK_KEYS = ['theme', 'accent', 'wallpaper', 'font', 'dotMotion', '
 export const Customize = {
   finish: null,
   isOpen() { return !!this.finish; },
-  open({ first = false, onClose = null } = {}) {
+  open({ onClose = null } = {}) {
     if (this.finish) return;
     const opener = document.activeElement;
     const draft = Object.fromEntries(LOOK_KEYS.map(k => [k, Settings.get(k)]));
@@ -45,12 +44,11 @@ export const Customize = {
     const storageOk = Store.available();
     const el = h('div', { class: 'cz scroll', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cz-title', 'aria-describedby': 'cz-desc', tabindex: '-1' },
       h('div', { class: 'cz-in' },
-        h('header', { class: 'cz-top' }, h('span', { class: 'cz-brand', svg: MARK + WORDMARK }),
-          first ? h('button', { class: 'btn ghost sm', type: 'button', text: 'Skip', onclick: () => this.close(false) }) : null),
+        h('header', { class: 'cz-top' }, h('span', { class: 'cz-brand', svg: MARK + WORDMARK })),
         h('div', { class: 'cz-grid' },
           h('div', { class: 'cz-left' },
-            h('h1', { id: 'cz-title', text: first ? 'Make it yours.' : 'Customize' }),
-            h('p', { id: 'cz-desc', text: first ? 'Pick a look for your desktop. Everything here can be changed later in Settings › Appearance.' : 'Changes preview live. Done keeps them, Cancel puts things back.' }),
+            h('h1', { id: 'cz-title', text: 'Customize' }),
+            h('p', { id: 'cz-desc', text: 'Changes preview live. Done keeps them, Cancel puts things back.' }),
             h('figure', { class: 'cz-prev' }, pv.el, h('figcaption', { text: 'Live preview. Move your pointer over it.' }))),
           h('div', { class: 'cz-opts' },
             sec('1', 'Preset', h('div', { class: 'presets', role: 'group', 'aria-label': 'Theme presets' }, presetBtns)),
@@ -63,7 +61,7 @@ export const Customize = {
       h('footer', { class: 'cz-foot' },
         h('div', { class: 'cz-foot-in' },
           h('p', { class: 'note', text: storageOk ? '' : 'This browser is blocking storage, so your choices last until you reload.' }),
-          h('button', { class: 'btn lg', type: 'button', text: first ? 'Skip' : 'Cancel', onclick: () => this.close(false) }),
+          h('button', { class: 'btn lg', type: 'button', text: 'Cancel', onclick: () => this.close(false) }),
           h('button', { class: 'btn primary lg', type: 'button', onclick: () => this.close(true) }, h('span', { svg: ICONS.check }), 'Done'))));
 
     function update() {
@@ -107,7 +105,6 @@ export const Customize = {
       if (save) { try { Settings.setMany(draft); } catch (err) { applyLook(); Notify.push({ title: 'Look not saved', body: err.message }); } }
       else applyLook();
       Bus.emit('look-preview');
-      Store.set('customized', true);
       pv.destroy();
       el.classList.add('out');
       setTimeout(() => el.remove(), motionOff() ? 0 : 200);

@@ -250,9 +250,58 @@ await section('Settings persist', async () => {
   await ctx.close();
 });
 
-await section('First-run Customize', async () => {
+await section('First-run tips', async () => {
   const { ctx, page } = await open({ ...DESK, customized: false }, BASE, 'firstrun');
-  check(await page.isVisible('.cz') && (await page.textContent('.cz h1')).includes('Make it yours'), 'shows on first visit');
+  check(await page.isVisible('#tour') && (await page.textContent('#tour h2')).includes('Welcome to Kanni'), 'shows on first visit');
+  check(!(await page.$('.cz')), 'the customize screen no longer opens on first run');
+  await page.click('.tour-card .btn.primary'); await sleep(300);
+  check((await page.textContent('#tour h2')) === 'All your apps', 'Show me goes to the first tip');
+  const hole = await page.$eval('.tour-hole', e => e.getBoundingClientRect()), btn = await page.$eval('#launcher-btn', e => e.getBoundingClientRect());
+  check(hole.left < btn.left && hole.right > btn.right && hole.top < btn.top && hole.bottom > btn.bottom, 'spotlights the control it describes');
+  await page.keyboard.press('ArrowRight'); await sleep(300);
+  check((await page.textContent('#tour h2')) === 'The dock', 'arrow key moves on');
+  await page.click('.tour-card button:has-text("Back")'); await sleep(300);
+  check((await page.textContent('#tour h2')) === 'All your apps', 'Back goes back');
+  await shot(page, 'tour');
+  await page.click('.tour-skip'); await sleep(300);
+  check(!(await page.$('#tour')), 'Skip closes it');
+  check(await page.evaluate(() => localStorage.getItem('snap:toured')) === 'true', 'Skip sets the flag');
+  await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));
+  check(!(await page.$('#tour')), 'not shown again');
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'about' }));
+  await page.click('[data-tour]'); await sleep(300);
+  check(await page.isVisible('#tour'), 'Settings › About › Show tips again replays it');
+  await page.keyboard.press('Escape'); await sleep(300);
+  check(!(await page.$('#tour')), 'Esc closes it');
+  await ctx.close();
+
+  const c2 = await newCtx(browser, { ...PHONE, customized: false });
+  const p2 = watch(await c2.newPage(), 'firstrun-phone');
+  await p2.goto(BASE); await p2.waitForSelector('#tour');
+  check(!(await noOverflow(p2)), 'fits a phone', await noOverflow(p2));
+  check(!(await p2.$$eval('.tour-dots i', d => d.length === 0)), 'has steps on a phone');
+  for (let k = 0; k < 12 && await p2.$('#tour'); k++) { await p2.tap('.tour-card .btn.primary'); await sleep(300); }
+  check(!(await p2.$('#tour')) && await p2.evaluate(() => localStorage.getItem('snap:toured')) === 'true', 'Next through to Done finishes and sets the flag');
+  await c2.close();
+
+  const c3 = await newCtx(browser, { ...DESK, storage: 'blocked' });
+  const p3 = watch(await c3.newPage(), 'storage-blocked');
+  await p3.goto(BASE); await p3.waitForSelector('#tour');
+  await p3.click('.tour-skip'); await sleep(300);
+  check(!(await p3.$('#tour')) && !(await p3.isVisible('#fatal')), 'storage blocked: tips still work');
+  await p3.evaluate(() => window.Kanni.open('settings', { page: 'appearance' }));
+  await p3.click('[data-customize]');
+  check((await p3.textContent('.cz-foot')).includes('blocking storage'), 'storage blocked: Customize explains it, does not crash');
+  await p3.click('.cz-foot button:has-text("Done")'); await sleep(300);
+  check(!(await p3.$('.cz')) && !(await p3.isVisible('#fatal')), 'storage blocked: Done still works');
+  await c3.close();
+});
+
+await section('Customize', async () => {
+  const { ctx, page } = await open(DESK, BASE, 'customize');
+  await page.evaluate(() => window.Kanni.open('settings', { page: 'appearance' }));
+  await page.click('[data-customize]');
+  check(await page.isVisible('.cz') && (await page.textContent('.cz-foot')).includes('Cancel'), 'Settings › Appearance › Customize opens it');
   await page.mouse.move(400, 450); await sleep(300);
   await page.click('.cz [data-v=light]');
   check(await page.$eval('html', e => e.dataset.theme) === 'light', 'live preview of theme on the whole UI');
@@ -263,36 +312,15 @@ await section('First-run Customize', async () => {
   await page.click('.cz .wall[data-v=dusk]');
   await page.click('.cz .switch');
   await shot(page, 'customize');
-  await page.click('.cz-foot button:has-text("Skip")'); await sleep(300);
-  check(!(await page.$('.cz')) && await page.$eval('html', e => e.dataset.theme) === 'dark', 'Skip closes and keeps the saved look');
-  check(await page.evaluate(() => localStorage.getItem('snap:customized')) === 'true', 'Skip sets the flag');
-  await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));
-  check(!(await page.$('.cz')), 'not shown again');
-  await page.evaluate(() => window.Kanni.open('settings', { page: 'appearance' }));
+  await page.click('.cz-foot button:has-text("Cancel")'); await sleep(300);
+  check(!(await page.$('.cz')) && await page.$eval('html', e => e.dataset.theme) === 'dark', 'Cancel closes and keeps the saved look');
   await page.click('[data-customize]');
-  check(await page.isVisible('.cz') && (await page.textContent('.cz-foot')).includes('Cancel'), 'Settings › Appearance › Customize reopens it');
   await page.click('.cz .swatch[aria-label=Amber]');
   await page.click('.cz .wall[data-v=night]');
   await page.click('.cz-foot button:has-text("Done")'); await sleep(300);
   const s = await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')));
   check(s.accent === '#eeb868' && s.wallpaper === 'night', 'Done saves the choices');
   await ctx.close();
-
-  const c2 = await newCtx(browser, { ...PHONE, customized: false });
-  const p2 = watch(await c2.newPage(), 'firstrun-phone');
-  await p2.goto(BASE); await p2.waitForSelector('.cz');
-  check(!(await noOverflow(p2)), 'fits a phone', await noOverflow(p2));
-  await p2.tap('.cz-foot button:has-text("Done")'); await sleep(300);
-  check(await p2.evaluate(() => localStorage.getItem('snap:customized')) === 'true', 'Done sets the flag');
-  await c2.close();
-
-  const c3 = await newCtx(browser, { ...DESK, storage: 'blocked' });
-  const p3 = watch(await c3.newPage(), 'storage-blocked');
-  await p3.goto(BASE); await p3.waitForSelector('.cz');
-  check((await p3.textContent('.cz-foot')).includes('blocking storage'), 'storage blocked: explains it, does not crash');
-  await p3.click('.cz-foot button:has-text("Done")'); await sleep(300);
-  check(!(await p3.$('.cz')) && !(await p3.isVisible('#fatal')), 'storage blocked: Done still works');
-  await c3.close();
 });
 
 await section('Open in about:blank', async () => {
@@ -303,7 +331,7 @@ await section('Open in about:blank', async () => {
   await sleep(1500);
   const inner = pop.frames().find(f => /kanni-ab=1/.test(f.url()));
   check(pop.url() === 'about:blank' && !!inner, 'opens about:blank with Kanni in a full-screen frame');
-  check(inner && await inner.evaluate(() => !!document.querySelector('#dock') && !document.querySelector('#launch-prompt') && !document.querySelector('.cz')), 'the framed copy boots and never shows the prompt');
+  check(inner && await inner.evaluate(() => !!document.querySelector('#dock') && !document.querySelector('#launch-prompt') && !document.querySelector('#tour')), 'the framed copy boots and never shows the prompt');
   check(inner && await inner.evaluate(() => { const r = window.frameElement.getBoundingClientRect(); return r.width === innerWidth || true; }), 'frame fills the tab');
   check(!(await page.isVisible('#launch-prompt')), 'prompt closes after opening');
   await pop.close();

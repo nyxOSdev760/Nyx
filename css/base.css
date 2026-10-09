@@ -22,7 +22,7 @@ p{margin:0}
 
 /* Wordmark */
 .wordmark{display:inline-flex;align-items:baseline;gap:.06em;line-height:1;white-space:nowrap}
-.wm-name{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:1.3em;letter-spacing:-.01em;color:var(--text)}
+.wm-name{font-family:var(--font-ui);font-weight:700;font-size:1.1em;letter-spacing:-.02em;color:var(--text)}
 
 /* Buttons */
 .btn{height:36px;padding:0 var(--sp-4);border-radius:var(--r-ctl);color:var(--text);background:var(--s2);border:1px solid var(--line);box-shadow:var(--edge);font-weight:500;font-size:var(--fs-md);display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);white-space:nowrap;transition:background var(--dur-1) var(--ease-out),border-color var(--dur-1) var(--ease-out),transform var(--dur-1) var(--ease-spring)}

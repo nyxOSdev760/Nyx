@@ -7,6 +7,7 @@ import { Settings, ENGINES, BrowserNet, WALLPAPERS, ACCENTS, FONTS, PRESETS, mot
 import { setCustomWallpaper, removeCustomWallpaper, hasCustomWallpaper } from '../wallpaper.js';
 import { History } from '../web.js';
 import { Customize } from '../customize.js';
+import { Tour } from '../tour.js';
 import { Launch } from '../launch.js';
 import { Lock } from '../lock.js';
 import { APP_VERSION, CHANGELOG, WhatsNew } from '../whatsnew.js';
@@ -310,7 +311,8 @@ registerApp({
           h('p', { text: 'Kanni is a quiet desktop for the web. It runs entirely in your browser as a static site, with no server of its own and no service worker.' }),
           h('p', null, 'Inspired by ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. Kanni is written from scratch and contains no GalaxyV7 code.'),
           h('p', { text: 'Shortcuts open in the built-in browser. YouTube and TikTok refuse to be shown inside other pages, so in Direct mode use Open in new tab for those.' })),
-        h('div', { class: 'row', style: 'margin-top:4px' }, h('button', { class: 'btn sm', type: 'button', onclick: () => WhatsNew.open() }, h('span', { svg: ICONS.sparkle }), 'What’s new')),
+        h('div', { class: 'row', style: 'margin-top:4px' }, h('button', { class: 'btn sm', type: 'button', onclick: () => WhatsNew.open() }, h('span', { svg: ICONS.sparkle }), 'What’s new'),
+          h('button', { class: 'btn sm', type: 'button', 'data-tour': '', onclick: () => Tour.open() }, h('span', { svg: ICONS.info }), 'Show tips again')),
         h('h3', { class: 'group-title', text: 'Changelog' }),
         h('div', { class: 'changelog' }, CHANGELOG.map(c => h('div', { class: 'cl-entry' },
           h('div', { class: 'cl-ver' }, h('b', { text: c.v }), h('small', { text: c.date })),
