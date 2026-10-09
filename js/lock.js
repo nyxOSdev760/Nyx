@@ -39,12 +39,14 @@ export const Lock = {
     if (this.locked) return;
     this.locked = true;
     document.body.classList.add('locked');
+    Bus.emit('sfx', 'lock');
     this.render();
   },
   unlock() {
     if (!this.locked) return;
     this.locked = false;
     document.body.classList.remove('locked');
+    Bus.emit('sfx', 'unlock');
     if (this.el) { this.el.classList.add('out'); const el = this.el; this.el = null; setTimeout(() => el.remove(), 220); }
     this.kickIdle();
   },

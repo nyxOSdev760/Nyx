@@ -16,6 +16,8 @@ import { Customize } from './customize.js';
 import { showLaunchPrompt } from './launch.js';
 import { Widgets } from './widgets.js';
 import { Lock } from './lock.js';
+import { Sfx } from './sound.js';
+import { WhatsNew } from './whatsnew.js';
 import './apps/browser.js';
 import './apps/settings.js';
 import './apps/widgets.js';
@@ -43,6 +45,7 @@ try {
   initShell();
   try { Widgets.init(); } catch (e) { console.error('Widgets disabled:', e); }
   try { Lock.initIdle(); } catch (e) { console.error('Idle lock disabled:', e); }
+  try { Sfx.init(); } catch (e) { console.error('Sound disabled:', e); }
 
   /* One canvas (#dots), one render loop: either the interactive dot field or a
      live wallpaper is active, never both. Custom/static wallpapers use neither. */
@@ -109,10 +112,13 @@ try {
   boot.done();
   // Restore a signed-in session in the background; never blocks the desktop.
   setTimeout(() => { try { Account.init(); } catch (e) { console.error(e); } }, 50);
+  try { Sfx.startup(); } catch (e) { console.error(e); }
 
-  // First run: the customize screen, then (if turned on) the about:blank prompt.
+  // First run: the customize screen, then (if turned on) the about:blank
+  // prompt, then — on an update — the What's new notes.
   try {
-    if (!Store.get('customized', false)) Customize.open({ first: true, onClose: showLaunchPrompt });
-    else showLaunchPrompt();
+    const afterLaunch = () => { try { WhatsNew.maybeShow(); } catch (e) { console.error(e); } };
+    if (!Store.get('customized', false)) Customize.open({ first: true, onClose: () => { showLaunchPrompt(); afterLaunch(); } });
+    else { showLaunchPrompt(); afterLaunch(); }
   } catch (e) { console.error('Customize/launch skipped:', e); }
 } catch (err) { boot.fatal(err); }

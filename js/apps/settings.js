@@ -9,6 +9,7 @@ import { History } from '../web.js';
 import { Customize } from '../customize.js';
 import { Launch } from '../launch.js';
 import { Lock } from '../lock.js';
+import { APP_VERSION, CHANGELOG, WhatsNew } from '../whatsnew.js';
 import { miniDesktop } from '../preview.js';
 import { lowPower } from '../dots.js';
 import { fmtTime } from '../shell.js';
@@ -217,6 +218,22 @@ registerApp({
           toggle('notifications', 'Show pop-ups', 'When off, notifications still collect behind the bell in the dock.'),
           srow('Test', 'Send a sample notification.', h('button', { class: 'btn', type: 'button', text: 'Send test', onclick: () => ctx.notify('Test notification', 'Notifications are working.') }))),
       ] },
+      { id: 'sound', name: 'Sound', icon: ICONS.headphones, render: () => {
+        const volRow = (() => {
+          const range = h('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(Settings.get('volume') * 100)), 'aria-label': 'Volume', class: 'range' });
+          range.addEventListener('input', () => { save('volume', +range.value / 100); });
+          range.addEventListener('change', () => { Bus.emit('sfx', 'toggle'); });
+          return srow('Volume', 'How loud the interface sounds are.', range);
+        })();
+        return [
+          head('Sound', 'Subtle interface sounds, synthesized in your browser.'),
+          group(null,
+            toggle('sounds', 'Interface sounds', 'Soft clicks and chimes for windows, notifications and the lock screen.'),
+            volRow,
+            toggle('startupSound', 'Startup chime', 'A short chime when NyxOS loads.'),
+            srow('Test', 'Play a sample sound.', h('button', { class: 'btn', type: 'button', text: 'Play', onclick: () => Bus.emit('sfx', 'notify') }))),
+        ];
+      } },
       { id: 'lock', name: 'Lock', icon: ICONS.lock, render: () => {
         const msg = h('p', { class: 'msg', 'aria-live': 'polite' });
         const pinRow = h('div', { class: 'srow stack' });
@@ -289,12 +306,16 @@ registerApp({
         ];
       } },
       { id: 'about', name: 'About', icon: ICONS.info, render: () => [
-        h('div', { class: 'about-hero' }, h('span', { class: 'about-mark', svg: MARK }), h('div', null, h('div', { class: 'about-wm', svg: WORDMARK }), h('small', { text: 'Version 1.0.0' }))),
+        h('div', { class: 'about-hero' }, h('span', { class: 'about-mark', svg: MARK }), h('div', null, h('div', { class: 'about-wm', svg: WORDMARK }), h('small', { text: `Version ${APP_VERSION}` }))),
         h('div', { class: 'prose' },
           h('p', { text: 'NyxOS is a quiet desktop for the web, named for Nyx, the Greek goddess of night. It runs entirely in your browser as a static site, with no server of its own and no service worker.' }),
           h('p', null, 'Inspired by ', h('a', { href: 'https://github.com/whosrogo/GalaxyV7', target: '_blank', rel: 'noopener noreferrer', text: 'GalaxyV7' }), ' by whosrogo. NyxOS is written from scratch and contains no GalaxyV7 code.'),
-          h('p', { text: 'Shortcuts open in the built-in browser. YouTube and TikTok refuse to be shown inside other pages, so in Direct mode use Open in new tab for those.' }),
-          h('p', { text: 'In Direct mode the browser embeds pages as they are. It is not a proxy, and sites that block embedding will not display. A proxy server you run can be connected in Settings › Browser.' })),
+          h('p', { text: 'Shortcuts open in the built-in browser. YouTube and TikTok refuse to be shown inside other pages, so in Direct mode use Open in new tab for those.' })),
+        h('div', { class: 'row', style: 'margin-top:4px' }, h('button', { class: 'btn sm', type: 'button', onclick: () => WhatsNew.open() }, h('span', { svg: ICONS.sparkle }), 'What’s new')),
+        h('h3', { class: 'group-title', text: 'Changelog' }),
+        h('div', { class: 'changelog' }, CHANGELOG.map(c => h('div', { class: 'cl-entry' },
+          h('div', { class: 'cl-ver' }, h('b', { text: c.v }), h('small', { text: c.date })),
+          h('ul', { class: 'cl-list' }, c.notes.map(n => h('li', { text: n })))))),
       ] },
     ];
     for (const x of extraSections) SECTIONS.splice(Math.max(0, SECTIONS.findIndex(s => s.id === x.after) + 1) || SECTIONS.length, 0, { ...x, render: () => x.render(ui) });

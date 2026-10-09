@@ -231,6 +231,18 @@ body.mode-browser .win[data-app="browser"] .titlebar,body.mode-browser .win[data
 #launch-prompt p{margin:2px 0 0;color:var(--text-2);font-size:var(--fs-md)}
 #launch-prompt p.msg{margin-top:var(--sp-2)}
 #launch-prompt .row{justify-content:flex-end}
+/* What's new */
+#whatsnew{position:fixed;inset:0;z-index:9300;display:grid;place-items:center;padding:var(--sp-5);background:rgba(0,0,0,.45);animation:fadeIn var(--dur-2) var(--ease-out)}
+#whatsnew.out{opacity:0;transition:opacity var(--dur-2) var(--ease-out)}
+.wn-card{width:min(420px,100%);padding:var(--sp-5);border-radius:var(--r-lg);background:var(--s1);border:1px solid var(--line-2);box-shadow:var(--shadow-3),var(--edge);animation:panelIn var(--dur-3) var(--ease-spring)}
+.wn-head{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.wn-mark .mark{width:30px;height:30px;color:var(--accent)}
+.wn-head b{display:block;font-size:var(--fs-lg)}
+.wn-head small{color:var(--text-2)}
+.wn-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-3)}
+.wn-list li{display:flex;gap:var(--sp-2);align-items:flex-start;color:var(--text-2);font-size:var(--fs-md)}
+.wn-dot{flex:none;color:var(--accent);margin-top:1px}.wn-dot .ico{width:16px;height:16px;stroke-width:2}
+.wn-foot{justify-content:flex-end;margin-top:var(--sp-5)}
 #launch-prompt.out{opacity:0;transform:translateY(8px);transition:opacity var(--dur-1) var(--ease-in),transform var(--dur-1) var(--ease-in)}
 
 /* ---------- Phones ---------- */

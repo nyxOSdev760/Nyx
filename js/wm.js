@@ -152,6 +152,7 @@ export const WM = {
     this.focus(id);
     this.mount(win, args);
     this.changed();
+    Bus.emit('sfx', 'open');
     return id;
   },
 
@@ -173,6 +174,7 @@ export const WM = {
 
   appError(win, err) {
     console.error(err);
+    Bus.emit('sfx', 'error');
     const app = Apps.get(win.appId);
     if (win.instance && win.instance.destroy) { try { win.instance.destroy(); } catch {} }
     win.instance = null;
@@ -203,6 +205,7 @@ export const WM = {
     this.wins.delete(id);
     if (motionOff()) win.el.remove();
     else { win.el.classList.add('closing'); setTimeout(() => win.el.remove(), 160); }
+    Bus.emit('sfx', 'close');
     this.focusTop();
     this.changed();
     this.hooks.afterClose(win);

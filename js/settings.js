@@ -97,6 +97,7 @@ export const SCHEMA = {
   autoAccent: { def: false, valid: bool },
   sounds: { def: true, valid: bool },
   startupSound: { def: true, valid: bool },
+  volume: { def: 0.4, valid: v => typeof v === 'number' && v >= 0 && v <= 1 },
   dotMotion: { def: true, valid: bool },
   desktopIcons: { def: true, valid: bool },
   clock24: { def: false, valid: bool },
