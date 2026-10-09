@@ -301,11 +301,10 @@ registerApp({
       const loading = !!(t && t.loading);
       if (loading && !progress.classList.contains('on')) { progress.classList.remove('done'); void progress.offsetWidth; progress.classList.add('on'); }
       if (!loading && progress.classList.contains('on')) { progress.classList.remove('on'); progress.classList.add('done'); }
-      // Honest status bar about what this connection mode can and can't do.
-      const direct = Settings.get('transport') === 'direct';
+      // A quiet note only when a load is dragging on; the toolbar's
+      // "Open in a new browser tab" button is always there as a fallback.
       let msg = null;
-      if (t && t.slow) msg = 'This page is taking a long time. It may be blocking being shown inside another page.';
-      else if (t && direct && isHttpUrl(url) && !t.error && Settings.get('embedHint') && !t.hintOff) msg = 'Blank page? Many sites refuse to be shown inside other pages. Direct mode can’t get around that.';
+      if (t && t.slow && !t.hintOff) msg = 'This page is taking a long time. It may be blocking being shown inside another page.';
       hint.hidden = !msg;
       if (msg) hint.replaceChildren(h('span', { class: 'br-hint-ico', svg: ICONS.info }), h('span', { class: 'br-hint-t', text: msg }),
         h('button', { class: 'btn sm', type: 'button', onclick: ctx.guard(openExternal) }, h('span', { svg: ICONS.external }), 'Open in new tab'),

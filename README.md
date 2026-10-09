@@ -151,5 +151,5 @@ npm run test:features  # widgets, desktops, lock screen, bookmarks, sounds, pers
 
 ## Notes
 
-- The browser loads pages directly ("Direct" mode). It is not a proxy: sites that refuse to be framed (YouTube, TikTok and many others) stay blank, and the browser says so and offers **Open in new tab**. A proxy server you run can be plugged in under **Settings › Browser** (or register a transport with `BrowserNet.register`).
+- The browser loads pages directly ("Direct" mode). It is not a proxy: sites that refuse to be framed (YouTube, TikTok and many others) stay blank. The toolbar's **Open in a new browser tab** button always opens the current page for real. A proxy server you run can be plugged in under **Settings › Browser** (or register a transport with `BrowserNet.register`).
 - There is no service worker; on load NyxOS removes any left at its address by an earlier deploy.

@@ -190,8 +190,7 @@ registerApp({
               h('div', { class: 'row' }, histMsg, confirmBtn('Clear', 'Tap again to clear', () => { History.clear(); Bus.emit('settings', { key: 'history' }); histMsg.textContent = 'History cleared.'; histMsg.className = 'msg ok'; })))),
           group('Connection',
             select('transport', 'Connection mode', t[Settings.get('transport')] ? t[Settings.get('transport')].description : '', Object.entries(t).map(([k, v]) => [k, v.label])),
-            urlField('proxyPrefix', 'Proxy server address', 'Only used in “Your proxy server” mode. The page address is appended, URL-encoded. Use a server you run or trust: it sees every page you load.', 'https://your-server.example/proxy/', 'Clear'),
-            toggle('embedHint', 'Show blank-page tip', 'The note under the address bar explaining why some sites stay blank.')),
+            urlField('proxyPrefix', 'Proxy server address', 'Only used in “Your proxy server” mode. The page address is appended, URL-encoded. Use a server you run or trust: it sees every page you load.', 'https://your-server.example/proxy/', 'Clear')),
         ];
       } },
       { id: 'launch', name: 'Launch', icon: ICONS.window, render: () => {

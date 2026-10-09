@@ -176,11 +176,11 @@ await section('Browser', async () => {
   await page.focus('.br-addr input');
   check((await page.inputValue('.br-addr input')) === 'https://example.com/', 'focusing the address shows the full URL');
   await page.keyboard.press('Escape');
-  check(await page.isVisible('.br-hint') && (await page.textContent('.br-hint')).includes('Blank page?'), 'honest blank-page tip is shown');
+  check(!(await page.isVisible('.br-hint')), 'no blank-page notice clutters the toolbar');
   const frame = page.frames().find(f => f.url() === 'https://example.com/');
   check(frame && (await frame.textContent('h1')) === 'example.com', 'page loads in the tab frame');
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.br-hint button:has-text("Open in new tab")')]);
-  check(popup.url() === 'https://example.com/', 'Open in new tab opens the real page');
+  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('[aria-label="Open in a new browser tab"]')]);
+  check(popup.url() === 'https://example.com/', 'the toolbar Open-in-new-tab button opens the real page');
   await popup.close();
   await page.fill('.br-addr input', 'nyx test query'); await page.press('.br-addr input', 'Enter'); await sleep(400);
   check((await page.inputValue('.br-addr input')) === 'nyx test query', 'searches show the search words');
