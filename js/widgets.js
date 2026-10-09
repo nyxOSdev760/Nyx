@@ -192,6 +192,7 @@ export const Widgets = {
   },
   render() {
     if (!this.layer) return;
+    document.body.classList.toggle('has-clock-wg', this.has('clock'));
     for (const old of this.layer._insts || []) { try { old.destroy && old.destroy(); } catch {} }
     this.layer._insts = [];
     this.layer.replaceChildren(...this.list.map(w => {

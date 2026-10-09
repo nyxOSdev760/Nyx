@@ -17,7 +17,7 @@ body[data-wall="mist"] .widget{color:#16171c}
 
 /* Clock */
 .wg-clock{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:110px}
-.wg-time{font-family:var(--font-display);font-size:48px;line-height:1;letter-spacing:-.01em;color:var(--text)}
+.wg-time{font-size:46px;font-weight:700;line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums;color:var(--text)}
 .wg-date{color:var(--text-2);font-size:var(--fs-md)}
 
 /* Calendar */
@@ -51,9 +51,10 @@ body[data-wall="mist"] .widget{color:#16171c}
 /* Widgets picker app */
 .wgpick-wrap{height:100%;overflow:auto}
 .wgpick{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4)}
-.wgpick-row{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);background:var(--s2)}
-.wgpick-ico{width:40px;height:40px;border-radius:var(--r-ctl);display:grid;place-items:center;background:var(--s3);color:var(--accent);flex:none}
-.wgpick-ico .ico{width:22px;height:22px}
+.wgpick-row{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-lg);background:var(--s2);box-shadow:var(--edge)}
+.wgpick-ico{--c:var(--accent);width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 72%,#fff),var(--c) 50%,color-mix(in srgb,var(--c) 75%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 4px 12px -4px color-mix(in srgb,var(--c) 60%,transparent)}
+.wgpick-ico .ico{width:22px;height:22px;stroke-width:1.9}
+.wgpick-ico[data-type="clock"]{--c:#6c6ff0}.wgpick-ico[data-type="calendar"]{--c:#ef4b55}.wgpick-ico[data-type="weather"]{--c:#2a9fe6}
 .wgpick-main{flex:1}.wgpick-main b{font-weight:500}
 
 /* Phones: widgets stack in a column below the clock, above the icon grid.

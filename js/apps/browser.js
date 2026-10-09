@@ -22,7 +22,7 @@ function siteIcon(url) {
 }
 
 registerApp({
-  id: 'browser', name: 'Browser', description: 'Browse the web in tabs', icon: ICONS.globe, tint: '#9db4ff', size: [1080, 700],
+  id: 'browser', name: 'Browser', description: 'Browse the web in tabs', icon: ICONS.globe, tint: '#4f86f7', size: [1080, 700],
   mount(root, ctx) {
     const tabs = [];
     let active = null;

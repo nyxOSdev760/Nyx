@@ -50,9 +50,9 @@ export const WALLPAPERS = [
   { id: 'slate', name: 'Graphite' }, { id: 'dots', name: 'Still dots' }, { id: 'mist', name: 'Mist' },
   { id: 'custom', name: 'Your image', kind: 'custom' },
 ];
-export const DEFAULT_ACCENT = '#9db4ff';
+export const DEFAULT_ACCENT = '#a78bfa';
 export const ACCENTS = [
-  { v: '#9db4ff', n: 'Moonlight' }, { v: '#d5d9e2', n: 'Silver' }, { v: '#7fd3b8', n: 'Mint' },
+  { v: '#a78bfa', n: 'Kanni' }, { v: '#9db4ff', n: 'Moonlight' }, { v: '#d5d9e2', n: 'Silver' }, { v: '#7fd3b8', n: 'Mint' },
   { v: '#eeb868', n: 'Amber' }, { v: '#ee93a9', n: 'Rose' }, { v: '#b7a8f5', n: 'Lilac' },
 ];
 /* Curated UI fonts, loaded from Google Fonts on demand (see loadFont). */
@@ -66,6 +66,7 @@ export const FONTS = [
 ];
 /* One-tap looks: accent + wallpaper + font together. Users can still tweak. */
 export const PRESETS = [
+  { id: 'kanni', n: 'Kanni', theme: 'dark', accent: '#a78bfa', wallpaper: 'oled', font: 'geist' },
   { id: 'midnight', n: 'Midnight', theme: 'dark', accent: '#9db4ff', wallpaper: 'oled', font: 'geist' },
   { id: 'mono', n: 'Mono', theme: 'dark', accent: '#d5d9e2', wallpaper: 'slate', font: 'jetbrains' },
   { id: 'neon', n: 'Neon', theme: 'dark', accent: '#7fd3b8', wallpaper: 'rain', font: 'spacegrotesk' },
@@ -128,7 +129,7 @@ export const Settings = {
     // v2: one-time move to the OLED look for settings saved by version 1.
     if (ver < 2 && saved && Object.keys(saved).length) { this.values.theme = 'dark'; this.values.wallpaper = 'oled'; }
     // v3 (NyxOS): people still on the old default accent get the new moonlight default.
-    if (ver < 3 && this.values.accent.toLowerCase() === '#7aa2ff') this.values.accent = DEFAULT_ACCENT;
+    if (ver < 3 && this.values.accent.toLowerCase() === '#7aa2ff') this.values.accent = '#9db4ff';
     if (ver < 3) {
       if (saved && Object.keys(saved).length) Store.set('settings', this.values);
       Store.set('settingsVersion', 3);

@@ -19,7 +19,7 @@ import { fmtTime } from '../shell.js';
 export const extraSections = [];
 
 registerApp({
-  id: 'settings', name: 'Settings', description: 'Appearance, desktop, browser, launch and data', icon: ICONS.sliders, tint: '#c9cdd8', size: [920, 640],
+  id: 'settings', name: 'Settings', description: 'Appearance, desktop, browser, launch and data', icon: ICONS.sliders, tint: '#868c9c', size: [920, 640],
   mount(root, ctx) {
     const cleanups = [];
     const save = (key, value, msgEl) => {
@@ -332,7 +332,7 @@ registerApp({
 
     function drawNav() {
       nav.replaceChildren(h('div', { class: 'st-nav-head' }, h('h1', { text: 'Settings' })),
-        ...SECTIONS.map(s => h('button', { type: 'button', 'aria-current': s.id === current && !mobileList ? 'page' : null, onclick: () => show(s.id, true) },
+        ...SECTIONS.map(s => h('button', { type: 'button', 'data-sec': s.id, 'aria-current': s.id === current && !mobileList ? 'page' : null, onclick: () => show(s.id, true) },
           h('span', { class: 'st-ico', svg: s.icon }), h('span', { class: 'st-name', text: s.name }), h('span', { class: 'st-chev', svg: ICONS.chevRight }))));
     }
     function show(id, focus) {

@@ -241,7 +241,7 @@ await section('Settings persist', async () => {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click('.srow:has-text("Export") button')]);
   check(dl.suggestedFilename() === 'kanni-settings.json', 'export downloads kanni-settings.json');
   await page.click('.srow:has-text("Reset settings") button'); await page.click('.srow:has-text("Reset settings") button');
-  check(await page.$eval('html', e => e.dataset.theme) === 'dark' && await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).accent) === '#9db4ff', 'reset restores defaults (moonlight accent)');
+  check(await page.$eval('html', e => e.dataset.theme) === 'dark' && await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).accent) === '#a78bfa', 'reset restores defaults (Kanni accent)');
   // Old data from the previous version carries over (snap: prefix, old default accent migrates).
   await page.evaluate(() => { localStorage.setItem('snap:settings', JSON.stringify({ accent: '#7aa2ff', clock24: true })); localStorage.setItem('snap:settingsVersion', '2'); });
   await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));

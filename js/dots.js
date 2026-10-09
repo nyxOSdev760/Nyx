@@ -113,12 +113,26 @@ export class DotField {
     const old = this.lift; this.lift = new Float32Array(this.n);
     if (old && old.length === this.n) this.lift.set(old);
     for (let y = 0, i = 0; y < rows; y++) for (let x = 0; x < cols; x++, i++) { this.xs[i] = ox + x * S; this.ys[i] = oy + y * S; }
-    // Pre-render the resting grid once.
+    // Pre-render the backdrop (black with a soft accent glow) and the resting grid once.
+    const [cr, cg, cb] = this.color;
+    const plain = document.createElement('canvas');
+    plain.width = this.cv.width; plain.height = this.cv.height;
+    const pg = plain.getContext('2d');
+    pg.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    pg.fillStyle = '#000'; pg.fillRect(0, 0, this.W, this.H);
+    const M = Math.max(this.W, this.H);
+    for (const [x, y, rad, a] of [[0.12, -0.08, 0.75, 0.2], [1.02, 1.08, 0.7, 0.14]]) {
+      const gr = pg.createRadialGradient(this.W * x, this.H * y, 0, this.W * x, this.H * y, M * rad);
+      gr.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`);
+      gr.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      pg.fillStyle = gr; pg.fillRect(0, 0, this.W, this.H);
+    }
+    this.plain = plain;
     const b = document.createElement('canvas');
     b.width = this.cv.width; b.height = this.cv.height;
     const g = b.getContext('2d');
+    g.drawImage(plain, 0, 0);
     g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    g.fillStyle = '#000'; g.fillRect(0, 0, this.W, this.H);
     g.fillStyle = 'rgba(255,255,255,0.16)';
     g.beginPath();
     for (let i = 0; i < this.n; i++) { g.moveTo(this.xs[i] + 1, this.ys[i]); g.arc(this.xs[i], this.ys[i], 1, 0, Math.PI * 2); }
@@ -150,9 +164,9 @@ export class DotField {
       const l = lift[i];
       if (l < 0.02) continue;
       const x0 = xs[i], y0 = ys[i];
-      // Cover the resting dot, leave a soft shadow where it sat.
-      ctx.globalAlpha = 1; ctx.fillStyle = '#000';
-      ctx.beginPath(); ctx.arc(x0, y0, 1.6, 0, TAU); ctx.fill();
+      // Cover the resting dot with the backdrop, leave a soft shadow where it sat.
+      ctx.globalAlpha = 1;
+      ctx.drawImage(this.plain, (x0 - 2) * dpr, (y0 - 2) * dpr, 4 * dpr, 4 * dpr, x0 - 2, y0 - 2, 4, 4);
       ctx.globalAlpha = 0.09 * l; ctx.fillStyle = '#fff';
       ctx.beginPath(); ctx.arc(x0, y0 + 1, 1 + l * 0.9, 0, TAU); ctx.fill();
       // The lifted dot: brighter, larger, tinted toward the accent near the peak.

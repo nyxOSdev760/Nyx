@@ -39,6 +39,6 @@ export function iconWithFallback(sources, letter, tint, size = '') {
 }
 export const shortcutTile = (sc, size) => iconWithFallback(sc.icons, sc.letter, sc.tint, size);
 
-registerShortcut({ id: 'youtube', name: 'YouTube', url: 'https://www.youtube.com/', tint: '#ff4e45', icons: favicon('youtube.com', 'https://www.youtube.com') });
-registerShortcut({ id: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/', tint: '#5ee8e4', icons: favicon('tiktok.com', 'https://www.tiktok.com') });
-registerShortcut({ id: 'gnmath', name: 'GN-Math', url: GN_MATH_URL, tint: '#5fd08c', icons: favicon('gn-math.dev', 'https://gn-math.dev') });
+registerShortcut({ id: 'youtube', name: 'YouTube', url: 'https://www.youtube.com/', tint: '#f03b32', icons: favicon('youtube.com', 'https://www.youtube.com') });
+registerShortcut({ id: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/', tint: '#14b3ae', icons: favicon('tiktok.com', 'https://www.tiktok.com') });
+registerShortcut({ id: 'gnmath', name: 'GN-Math', url: GN_MATH_URL, tint: '#27a862', icons: favicon('gn-math.dev', 'https://gn-math.dev') });

@@ -11,6 +11,7 @@ export const APP_VERSION = '1.3.0';
 export const CHANGELOG = [
   { v: '1.3.0', date: '2026-10', notes: [
     'NyxOS is now Kanni 👾. Your settings, data and account carry over.',
+    'A fresh look: colorful app icons, a bigger dock, an app grid, a desktop clock and a new violet accent.',
     'New visitors get a quick tips tour. Replay it from Settings › About.',
   ] },
   { v: '1.2.0', date: '2026-10', notes: [

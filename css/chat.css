@@ -12,7 +12,7 @@
 .auth-card{margin:auto;width:min(380px,100%);display:flex;flex-direction:column;align-items:stretch;gap:var(--sp-4)}
 .auth-mark{align-self:center}
 .auth-mark .mark{width:36px;height:36px}
-.auth-card h2{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:32px;letter-spacing:0;text-align:center;line-height:1.05}
+.auth-card h2{font-weight:700;font-size:28px;letter-spacing:-.035em;text-align:center;line-height:1.05}
 .auth-sub{color:var(--text-2);text-align:center;font-size:var(--fs-md);margin-top:calc(var(--sp-2) * -1)}
 .auth-card .seg{align-self:stretch;display:flex}
 .auth-card .seg button{flex:1;height:32px}
@@ -44,7 +44,7 @@
 .chat-items{display:flex;flex-direction:column}
 .chat-older,.chat-start{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);padding:var(--sp-4);color:var(--text-3);font-size:var(--fs-sm)}
 .chat-start{flex-direction:column;gap:2px;padding:var(--sp-6) var(--sp-4) var(--sp-3)}
-.chat-start b{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:24px;color:var(--text)}
+.chat-start b{font-weight:700;font-size:22px;letter-spacing:-.03em;color:var(--text)}
 .chat-day{display:flex;align-items:center;gap:var(--sp-3);margin:var(--sp-4) var(--sp-4) var(--sp-2);color:var(--text-3);font-size:var(--fs-xs);font-weight:500}
 .chat-day::before,.chat-day::after{content:"";flex:1;height:1px;background:var(--line)}
 .chat-group{display:flex;gap:var(--sp-3);padding:var(--sp-2) var(--sp-4) 2px;animation:msgIn var(--dur-2) var(--ease-out)}

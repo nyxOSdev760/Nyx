@@ -58,7 +58,7 @@ function fmtDay(t) {
 const dayKey = (t) => new Date(t).toDateString();
 
 registerApp({
-  id: 'chat', name: 'Chat', description: 'The public room, plus voice', icon: ICONS.chat, tint: '#7fd3b8', size: [760, 640],
+  id: 'chat', name: 'Chat', description: 'The public room, plus voice', icon: ICONS.chat, tint: '#22b58a', size: [760, 640],
   mount(root, ctx) {
     const off = [];
     let room = null;   // live room state while signed in

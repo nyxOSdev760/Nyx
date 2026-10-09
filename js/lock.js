@@ -56,7 +56,7 @@ export const Lock = {
     const hasPin = this.hasPin();
     const time = h('div', { class: 'lock-time tnum' });
     const date = h('div', { class: 'lock-date' });
-    const tick = () => { const d = new Date(); time.textContent = fmtTime(d); date.textContent = d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }); };
+    const tick = () => { const d = new Date(); const [hm, ap] = fmtTime(d).split(/\s(?=[AP]M$)/i); time.replaceChildren(hm, ap ? h('span', { class: 'lock-ampm', text: ap }) : ''); date.textContent = d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }); };
     tick();
     const offTick = Bus.on('tick', tick);
 

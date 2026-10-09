@@ -3,12 +3,12 @@
    used sparingly. Spacing is on a 4/8px scale. Motion is short and springy. */
 :root{
   --font-ui:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  --font-display:'Instrument Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --font-display:var(--font-ui);   /* big numbers and titles: same face, heavier and tighter */
   --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
 
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
-  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-pill:999px;
-  --r-win:14px; --r-ctl:10px;   /* windows and controls (macOS/Linear-ish) */
+  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:22px; --r-pill:999px;
+  --r-win:16px; --r-ctl:10px;   /* windows and controls (macOS/Linear-ish) */
   --fs-xs:12px; --fs-sm:12px; --fs-md:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px; --fs-3xl:44px;
   /* Inner top highlight on raised surfaces, and a hairline ring. */
   --edge:inset 0 1px 0 rgba(255,255,255,.06);
@@ -20,28 +20,29 @@
   --ease-in:cubic-bezier(.55,0,.8,.2);
   --dur-1:150ms; --dur-2:200ms; --dur-3:250ms;
 
-  --accent:#9db4ff; --on-accent:#0b0f1c;
+  --accent:#a78bfa; --on-accent:#12091f;
   --accent-soft:color-mix(in srgb,var(--accent) 13%,transparent);
   --accent-line:color-mix(in srgb,var(--accent) 42%,transparent);
+  --accent-glow:0 6px 20px color-mix(in srgb,var(--accent) 32%,transparent);
 
-  --dock-h:56px;
+  --dock-h:62px;
   --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
   --safe-l:env(safe-area-inset-left,0px); --safe-r:env(safe-area-inset-right,0px);
 }
 :root[data-theme="dark"],[data-theme="dark"]{
   --bg:#000;
-  --s1:#0a0a0b;   /* windows, panels */
-  --s2:#111113;   /* raised controls, cards */
-  --s3:#19191c;   /* hover, pressed */
-  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.11); --line-3:rgba(255,255,255,.18);
-  --hover:rgba(255,255,255,.05); --press:rgba(255,255,255,.085);
-  --text:#ececee; --text-2:#9d9da6; --text-3:#65656e;
-  --field:#0c0c0e;
-  --tile:#0e0e10; --tile-line:rgba(255,255,255,.09);
-  --glass:rgba(12,12,14,.72);
+  --s1:#0e0e13;   /* windows, panels */
+  --s2:#15151c;   /* raised controls, cards */
+  --s3:#1e1e27;   /* hover, pressed */
+  --line:rgba(255,255,255,.075); --line-2:rgba(255,255,255,.12); --line-3:rgba(255,255,255,.2);
+  --hover:rgba(255,255,255,.06); --press:rgba(255,255,255,.1);
+  --text:#f1f1f4; --text-2:#a3a3b2; --text-3:#6c6c7c;
+  --field:#0a0a0f;
+  --tile:#121218; --tile-line:rgba(255,255,255,.09);
+  --glass:rgba(20,20,28,.62);
   --shadow-1:0 1px 2px rgba(0,0,0,.6);
-  --shadow-2:0 10px 30px rgba(0,0,0,.6);
-  --shadow-3:0 28px 80px rgba(0,0,0,.75),0 2px 8px rgba(0,0,0,.5);
+  --shadow-2:0 12px 32px rgba(0,0,0,.55);
+  --shadow-3:0 30px 90px rgba(0,0,0,.7),0 2px 10px rgba(0,0,0,.45);
   --danger:#ff7b7b; --ok:#7ed6a7; --warn:#efc46b;
   color-scheme:dark;
 }

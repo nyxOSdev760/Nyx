@@ -9,7 +9,7 @@ a{color:var(--accent);text-underline-offset:2px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [hidden]{display:none!important}
 svg{display:block}
-h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.02em}
 p{margin:0}
 .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .mark{display:block;color:var(--accent)}
@@ -29,7 +29,7 @@ p{margin:0}
 .btn:hover:not(:disabled){background:var(--s3);border-color:var(--line-2)}
 .btn:active:not(:disabled){transform:scale(.97)}
 .btn .ico{width:16px;height:16px}
-.btn.primary{background:var(--accent);border-color:transparent;color:var(--on-accent);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.btn.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 82%,#fff),var(--accent) 55%,color-mix(in srgb,var(--accent) 88%,#000));border-color:transparent;color:var(--on-accent);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),var(--accent-glow)}
 .btn.primary:hover:not(:disabled){background:var(--accent);filter:brightness(1.08)}
 .btn.ghost{background:transparent;border-color:transparent;box-shadow:none}
 .btn.ghost:hover:not(:disabled){background:var(--hover)}
@@ -57,12 +57,12 @@ textarea.field{height:auto;padding:var(--sp-2) var(--sp-3);resize:none;line-heig
 /* Switch, segmented, swatches */
 .switch{position:relative;width:40px;height:24px;border-radius:12px;background:var(--s3);box-shadow:inset 0 0 0 1px var(--line-2);flex:none;transition:background var(--dur-2) var(--ease-out)}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--text-2);transition:transform var(--dur-2) var(--ease-spring),background var(--dur-2) var(--ease-out)}
-.switch[aria-checked="true"]{background:var(--accent);box-shadow:none}
+.switch[aria-checked="true"]{background:var(--accent);box-shadow:0 0 12px color-mix(in srgb,var(--accent) 35%,transparent)}
 .switch[aria-checked="true"]::after{transform:translateX(16px);background:var(--on-accent)}
 .seg{display:inline-flex;padding:3px;gap:2px;border-radius:var(--r-ctl);background:var(--s2);border:1px solid var(--line);flex:none}
 .seg button{height:28px;padding:0 var(--sp-3);border-radius:5px;font-weight:500;font-size:var(--fs-md);color:var(--text-2);transition:background var(--dur-1) var(--ease-out),color var(--dur-1) var(--ease-out)}
 .seg button:hover{color:var(--text)}
-.seg button[aria-checked="true"]{background:var(--s3);color:var(--text);box-shadow:inset 0 0 0 1px var(--line-2)}
+.seg button[aria-checked="true"]{background:var(--s3);color:var(--text);box-shadow:inset 0 0 0 1px var(--line-2),0 1px 3px rgba(0,0,0,.25)}
 .swatches{display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:center}
 .swatch{position:relative;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2);transition:transform var(--dur-2) var(--ease-spring)}
 .swatch:hover{transform:scale(1.08)}
