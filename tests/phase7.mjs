@@ -252,7 +252,7 @@ await section('Notes, Calculator, Clock, Games', async () => {
   check(await page.$$eval('.ck-laps li', x => x.length) === 1, 'stopwatch records a lap');
 
   await page.evaluate(() => window.Kanni.open('games')); await sleep(400);
-  check(await page.$$eval('.gm-card', x => x.length) === 8 && await page.$$eval('.gm-lic', x => x.every(a => a.textContent && /^https:\/\/github\.com\//.test(a.href))), 'Games lists 8 games, each with a license and source link');
+  check(await page.$$eval('.gm-card', x => x.length) === 7 && await page.$$eval('.gm-art img', x => x.every(i => i.complete && i.naturalWidth === 480)) && await page.$$eval('.gm-lic', x => x.every(a => a.textContent && /^https:\/\/github\.com\//.test(a.href))), 'Games lists 7 games with real thumbnails, each with a license and source link');
   await page.click('.gm-filter button:has-text("Puzzle")'); await sleep(100);
   check(await page.$$eval('.gm-card', x => x.length) === 2, 'filters by type');
   await page.click('.gm-play[data-game="2048"]'); await sleep(300);

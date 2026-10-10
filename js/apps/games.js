@@ -5,6 +5,8 @@ import { h, Store } from '../core.js';
 import { ICONS } from '../icons.js';
 import { registerApp } from '../apps.js';
 
+/* Thumbnails in assets/games/ are made from each game's own artwork (see CREDITS.md there). */
+export const thumbOf = (g) => `assets/games/${g.id}.jpg`;
 export const GAMES = [
   { id: '2048', name: '2048', emoji: '🔢', color: '#edc22e', kind: 'Puzzle', blurb: 'Slide tiles, merge numbers, reach 2048.', url: 'https://gabrielecirulli.github.io/2048/', by: 'Gabriele Cirulli', license: 'MIT', src: 'https://github.com/gabrielecirulli/2048' },
   { id: 'hextris', name: 'Hextris', emoji: '⬢', color: '#e74c3c', kind: 'Arcade', blurb: 'Spin the hexagon to match falling blocks.', url: 'https://hextris.github.io/hextris/', by: 'Logan Engstrom and contributors', license: 'GPL-3.0', src: 'https://github.com/Hextris/hextris' },
@@ -13,7 +15,6 @@ export const GAMES = [
   { id: 'astray', name: 'Astray', emoji: '🌀', color: '#7b61ff', kind: 'Maze', blurb: 'Roll a ball out of a 3D maze.', url: 'https://wwwtyro.github.io/Astray/', by: 'Rye Terrell', license: 'Unlicense', src: 'https://github.com/wwwtyro/Astray' },
   { id: 'cube', name: 'Cube Composer', emoji: '🧊', color: '#2ec4b6', kind: 'Puzzle', blurb: 'Chain functions to transform cube stacks.', url: 'https://david-peter.de/cube-composer/', by: 'David Peter', license: 'MIT', src: 'https://github.com/sharkdp/cube-composer' },
   { id: 'darkroom', name: 'A Dark Room', emoji: '🔥', color: '#b35c2e', kind: 'Adventure', blurb: 'A minimalist text adventure. Light the fire.', url: 'https://doublespeakgames.github.io/adarkroom/', by: 'Doublespeak Games', license: 'MPL-2.0', src: 'https://github.com/doublespeakgames/adarkroom' },
-  { id: 'untrusted', name: 'Untrusted', emoji: '💻', color: '#27ae60', kind: 'Coding', blurb: 'Hack the game’s own code to escape.', url: 'https://alex.nisnevich.com/untrusted/', by: 'Alex Nisnevich and Greg Shuflin', license: 'CC BY-NC-SA 3.0', src: 'https://github.com/AlexNisnevich/untrusted' },
 ];
 
 const recent = () => { const v = Store.get('gamesRecent', []); return Array.isArray(v) ? v.filter(id => GAMES.some(g => g.id === id)) : []; };
@@ -25,9 +26,8 @@ registerApp({
     const filters = h('div', { class: 'seg gm-filter', role: 'radiogroup', 'aria-label': 'Game type' });
     const grid = h('div', { class: 'gm-grid' });
     const library = h('div', { class: 'gm-lib scroll' },
-      h('header', { class: 'gm-head' }, h('div', null, h('h2', { text: 'Games' }), h('p', { class: 'lede', text: 'Free, open-source games, played straight from their authors’ sites.' })), filters),
-      grid,
-      h('p', { class: 'gm-foot', text: 'Every game here is free to play and open source. Licenses and credits are on each card.' }));
+      h('header', { class: 'gm-head' }, filters),
+      grid);
     const player = h('div', { class: 'gm-player', hidden: true });
     root.append(h('div', { class: 'gm' }, library, player));
 
@@ -40,7 +40,7 @@ registerApp({
       const list = GAMES.filter(g => kind === 'All' || g.kind === kind).sort((a, b) => ((r.indexOf(a.id) + 1 || 99) - (r.indexOf(b.id) + 1 || 99)));
       grid.replaceChildren(...list.map(g => h('article', { class: 'gm-card', style: `--gc:${g.color}` },
         h('button', { class: 'gm-play', type: 'button', 'aria-label': `Play ${g.name}`, 'data-game': g.id, onclick: () => play(g) },
-          h('span', { class: 'gm-art', 'aria-hidden': 'true' }, h('span', { class: 'gm-emoji', text: g.emoji })),
+          h('span', { class: 'gm-art', 'aria-hidden': 'true' }, h('img', { src: thumbOf(g), alt: '', loading: 'lazy', decoding: 'async', onerror: (e) => e.target.replaceWith(h('span', { class: 'gm-emoji', text: g.emoji })) })),
           h('span', { class: 'gm-info' }, h('b', { text: g.name }), h('small', { text: g.blurb }))),
         h('div', { class: 'gm-meta' }, h('span', { class: 'gm-kind', text: g.kind }),
           r[0] === g.id ? h('span', { class: 'gm-kind last', text: 'Recent' }) : null,
@@ -53,7 +53,7 @@ registerApp({
         allow: 'fullscreen; autoplay; gamepad; gyroscope; accelerometer' });
       const hint = h('div', { class: 'gm-hint', hidden: true }, h('span', { text: 'Taking a while? Some sites block being shown inside another page.' }),
         h('a', { class: 'btn sm', href: g.url, target: '_blank', rel: 'noopener noreferrer' }, h('span', { svg: ICONS.external }), 'Open in a new tab'));
-      const loading = h('div', { class: 'gm-loading' }, h('span', { class: 'gm-emoji', text: g.emoji }), h('span', { class: 'spinner' }));
+      const loading = h('div', { class: 'gm-loading', style: `background-image:url(${thumbOf(g)})` }, h('span', { class: 'spinner' }));
       frame.addEventListener('load', () => { clearTimeout(loadT); loading.remove(); hint.hidden = true; });
       clearTimeout(loadT); loadT = setTimeout(() => { hint.hidden = false; }, 12000);
       player.replaceChildren(

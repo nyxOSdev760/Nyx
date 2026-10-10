@@ -433,4 +433,5 @@ body:has(.ctx-menu) .dock-item[data-tip]:hover::before{display:none}
 .ks-row dd{margin:0;color:var(--text-2);font-size:var(--fs-md)}
 .ks-row .kbd{font-family:var(--font-ui);font-size:var(--fs-xs);font-weight:600;padding:2px 7px;background:var(--s2);color:var(--text);border-bottom-width:2px}
 body.mode-browser #home-search{display:none!important}
-.sp-game{background:var(--gc);color:#fff;font-size:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.sp-game{overflow:hidden;padding:0}
+.sp-game img{width:100%;height:100%;object-fit:cover}

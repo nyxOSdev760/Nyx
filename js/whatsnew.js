@@ -10,7 +10,7 @@ export const APP_VERSION = '1.5.0';
 /* Newest first. Each: { v, date, notes:[...] } */
 export const CHANGELOG = [
   { v: '1.5.0', date: '2026-10', notes: [
-    'New Games app: 2048, Hextris, Clumsy Bird, A Dark Room and more. All free and open source, with credits.',
+    'New Games app: 2048, Hextris, Clumsy Bird, A Dark Room and more, with real thumbnails. All free and open source, with credits.',
     'Invaders has been replaced by the Games app.',
   ] },
   { v: '1.4.0', date: '2026-10', notes: [
