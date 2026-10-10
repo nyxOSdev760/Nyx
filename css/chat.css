@@ -10,8 +10,6 @@
 /* Auth */
 .chat-auth{flex:1;overflow:auto;display:flex;padding:var(--sp-6) var(--sp-4)}
 .auth-card{margin:auto;width:min(380px,100%);display:flex;flex-direction:column;align-items:stretch;gap:var(--sp-4)}
-.auth-mark{align-self:center}
-.auth-mark .mark{width:36px;height:36px}
 .auth-card h2{font-weight:700;font-size:28px;letter-spacing:-.035em;text-align:center;line-height:1.05}
 .auth-sub{color:var(--text-2);text-align:center;font-size:var(--fs-md);margin-top:calc(var(--sp-2) * -1)}
 .auth-card .seg{align-self:stretch;display:flex}

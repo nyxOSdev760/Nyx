@@ -1,6 +1,6 @@
 # Kanni 👾
 
-A quiet desktop for the web. Kanni (formerly NyxOS) is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run tips tour, Spotlight search (Ctrl+K), a Control Center, Notes, Calculator, Clock and an Invaders 👾 game, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
+A quiet desktop for the web. Kanni (formerly NyxOS) is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run tips tour, Spotlight search (Ctrl+K), a Control Center, Notes, Calculator, Clock, a Games app of free open-source web games, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
 
 Inspired by [GalaxyV7](https://github.com/whosrogo/GalaxyV7) by whosrogo. Kanni is written from scratch and contains no GalaxyV7 code.
 
@@ -44,7 +44,7 @@ js/config.js        FIREBASE_CONFIG and TURN_SERVERS (edit these)
 js/firebase.js      lazy Firebase loader (CDN ES modules)
 js/account.js       username accounts
 js/voice.js         WebRTC voice room
-js/apps/*.js        Browser, Settings, Chat, Widgets, Notes, Calculator, Clock, Invaders
+js/apps/*.js        Browser, Settings, Chat, Widgets, Notes, Calculator, Clock, Games
 rules.html          chat rules page
 firestore.rules     Firestore security rules
 tests/              rules tests and end-to-end tests
@@ -153,7 +153,7 @@ npm run test:e2e       # core end-to-end tests in headless Chromium at desktop a
 npm run test:features  # widgets, desktops, lock screen, bookmarks, sounds, personalization
 ```
 
-`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens Kanni with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run tips tour, the Customize screen, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones. `test:features` adds the personalization, widgets, multiple desktops, lock screen, bookmarks, sound, Spotlight, Control Center, menus, Notes, Calculator, Clock and Invaders features (no Firebase needed).
+`test:e2e` serves the site, starts the Auth and Firestore emulators, and opens Kanni with `?emulator=1`, which (on `localhost` only) points the app at the emulators with a demo project. It covers boot, every app, windows and snapping, the dock, the mode switch, browser tabs and navigation, shortcuts, settings persistence, the first-run tips tour, the Customize screen, about:blank with pop-ups allowed and blocked, reduced motion, accounts, chat, moderation, and a two-window voice call with fake microphones. `test:features` adds the personalization, widgets, multiple desktops, lock screen, bookmarks, sound, Spotlight, Control Center, menus, Notes, Calculator, Clock and Games features (no Firebase needed).
 
 ## Notes
 

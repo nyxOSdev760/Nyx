@@ -25,7 +25,7 @@ import './apps/chat.js';
 import './apps/notes.js';
 import './apps/calculator.js';
 import './apps/clock.js';
-import './apps/invaders.js';
+import './apps/games.js';
 import { Spotlight } from './spotlight.js';
 import { initControl } from './control.js';
 import { initDeskMenu } from './deskmenu.js';

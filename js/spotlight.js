@@ -13,6 +13,7 @@ import { Mode, closePanels } from './shell.js';
 import { Lock } from './lock.js';
 import { Notify } from './notify.js';
 import { Widgets } from './widgets.js';
+import { GAMES } from './apps/games.js';
 
 const PAGES = [
   ['appearance', 'Appearance', ICONS.paint, 'theme dark light accent color wallpaper font look'],
@@ -80,6 +81,8 @@ function results(raw) {
   const top = (list) => list.filter(x => x.s > 0).sort((a, b) => b.s - a.s);
   const a = top(apps);
   if (a.length) groups.push(['Apps', a]);
+  const games = top(GAMES.map(g => ({ title: `Play ${g.name}`, sub: `${g.kind} game · ${g.license}`, tile: () => h('span', { class: 'sp-act sp-game', style: `--gc:${g.color}`, text: g.emoji }), run: () => WM.open('games', { game: g.id }), s: score(q, g.name, `game play ${g.kind.toLowerCase()}`) })));
+  if (games.length) groups.push(['Games', games.slice(0, 4)]);
   const pages = top(PAGES.map(([id, name, icon, kw]) => ({ title: name, sub: 'Settings', tile: () => secTile(id, icon), run: () => WM.open('settings', { page: id }), s: score(q, name, kw) })));
   if (pages.length) groups.push(['Settings', pages]);
   const acts = top(actions().map(x => ({ ...x, tile: () => x.swatch ? h('span', { class: 'sp-act' }, h('i', { class: 'sp-sw', style: `background:${x.swatch}` })) : actTile(x.icon), s: score(q, x.title, x.kw) })));

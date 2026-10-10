@@ -5,10 +5,14 @@
 import { $, h, Store } from './core.js';
 import { ICONS, MARK, WORDMARK } from './icons.js';
 
-export const APP_VERSION = '1.4.0';
+export const APP_VERSION = '1.5.0';
 
 /* Newest first. Each: { v, date, notes:[...] } */
 export const CHANGELOG = [
+  { v: '1.5.0', date: '2026-10', notes: [
+    'New Games app: 2048, Hextris, Clumsy Bird, A Dark Room and more. All free and open source, with credits.',
+    'Invaders has been replaced by the Games app.',
+  ] },
   { v: '1.4.0', date: '2026-10', notes: [
     'Spotlight: press Ctrl+K (or the search button) to find apps, settings and actions, search the web, or do math.',
     'Control Center: dark mode, Do Not Disturb, sounds, volume and accent, right above your notifications.',

@@ -165,7 +165,7 @@ await section('Sounds + What’s new', async () => {
   await sleep(600);
   check(await page.isVisible('#whatsnew'), 'What’s new shows after a version change');
   await page.click('#whatsnew .btn'); await sleep(200);
-  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.4.0"', 'records the new version');
+  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.5.0"', 'records the new version');
   await page.evaluate(() => window.Kanni.open('settings', { page: 'sound' })); await sleep(300);
   await page.click('.srow:has-text("Test") button'); await sleep(150);
   await page.evaluate(() => { const r = document.querySelector('.range'); r.value = '65'; r.dispatchEvent(new Event('input', { bubbles: true })); }); await sleep(150);
@@ -193,6 +193,8 @@ await section('Spotlight, Control Center and menus', async () => {
   await page.keyboard.press('Control+k'); await sleep(200);
   await page.fill('#spotlight input', 'appearance'); await sleep(150);
   check((await page.textContent('#spotlight .sp-row[aria-selected=true]')).includes('Appearance'), 'finds Settings pages');
+  await page.fill('#spotlight input', '2048'); await sleep(150);
+  check((await page.textContent('#spotlight')).includes('Play 2048'), 'finds individual games');
   await page.keyboard.press('Escape'); await sleep(250);
   check(!(await page.$('#spotlight')), 'Esc closes Spotlight');
   await page.click('#search-btn'); await sleep(200);
@@ -223,7 +225,7 @@ await section('Spotlight, Control Center and menus', async () => {
   await ctx.close();
 });
 
-await section('Notes, Calculator, Clock, Invaders', async () => {
+await section('Notes, Calculator, Clock, Games', async () => {
   const { ctx, page } = await open(DESK, 'apps');
   await page.evaluate(() => window.Kanni.open('notes', { new: true })); await sleep(300);
   await page.keyboard.type('Shopping\nmilk and eggs'); await sleep(500);
@@ -249,10 +251,14 @@ await section('Notes, Calculator, Clock, Invaders', async () => {
   await page.click('.ck-seg [data-v=watch]'); await page.click('.ck-main'); await sleep(600); await page.click('.ck-second'); await sleep(100);
   check(await page.$$eval('.ck-laps li', x => x.length) === 1, 'stopwatch records a lap');
 
-  await page.evaluate(() => window.Kanni.open('invaders')); await sleep(400);
-  await page.keyboard.press('Space'); await sleep(200);
-  for (let i = 0; i < 10; i++) { await page.keyboard.press('Space'); await sleep(120); }
-  check(!(await page.$('.app-error')), 'Invaders runs');
+  await page.evaluate(() => window.Kanni.open('games')); await sleep(400);
+  check(await page.$$eval('.gm-card', x => x.length) === 8 && await page.$$eval('.gm-lic', x => x.every(a => a.textContent && /^https:\/\/github\.com\//.test(a.href))), 'Games lists 8 games, each with a license and source link');
+  await page.click('.gm-filter button:has-text("Puzzle")'); await sleep(100);
+  check(await page.$$eval('.gm-card', x => x.length) === 2, 'filters by type');
+  await page.click('.gm-play[data-game="2048"]'); await sleep(300);
+  check(await page.$eval('.gm-frame', f => f.src) === 'https://gabrielecirulli.github.io/2048/' && await page.$eval('.gm-frame', f => !f.sandbox.contains('allow-top-navigation')), 'plays a game in a sandboxed frame that can’t navigate Kanni away');
+  await page.click('.gm-back'); await sleep(200);
+  check(await page.isVisible('.gm-grid') && (await page.textContent('.gm-card')).includes('Recent'), 'back to the library, last played first');
   await ctx.close();
 
   const m = await open(PHONE, 'apps-phone');
@@ -261,7 +267,7 @@ await section('Notes, Calculator, Clock, Invaders', async () => {
   check(await m.page.isVisible('#spotlight input'), 'search pill opens Spotlight');
   check(!(await noOverflow(m.page)), 'Spotlight fits a phone', await noOverflow(m.page));
   await m.page.keyboard.press('Escape'); await sleep(200);
-  for (const app of ['notes', 'calculator', 'clock', 'invaders']) {
+  for (const app of ['notes', 'calculator', 'clock', 'games']) {
     await m.page.evaluate(a => window.Kanni.open(a), app); await sleep(350);
     check(!(await m.page.$('.app-error')) && !(await noOverflow(m.page)), `${app} fits a phone`, await noOverflow(m.page));
     await m.page.tap(`.win[data-app=${app}] .win-home`); await sleep(250);

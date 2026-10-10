@@ -3,7 +3,7 @@
    Limits (500 characters, one message per 2 seconds, bans, who may delete)
    are enforced by firestore.rules; the client mirrors them for feedback. */
 import { h, Bus, colorFor, initials, isMobile } from '../core.js';
-import { ICONS, MARK } from '../icons.js';
+import { ICONS } from '../icons.js';
 import { registerApp } from '../apps.js';
 import { Account, MIN_PASSWORD } from '../account.js';
 import { extraSections } from './settings.js';
@@ -174,7 +174,6 @@ registerApp({
       });
       draw();
       return h('div', { class: 'chat-auth scroll' }, h('div', { class: 'auth-card' },
-        h('div', { class: 'auth-mark', svg: MARK }),
         h('h2', { text: 'Join the conversation' }),
         h('p', { class: 'auth-sub', text: 'One public room for everyone on Kanni. Sign in with a username; no email needed.' }),
         tabs, form,
