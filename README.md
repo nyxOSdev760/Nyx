@@ -1,6 +1,6 @@
 # Kanni 👾
 
-A quiet desktop for the web. Kanni (formerly NyxOS) is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run tips tour, Spotlight search (Ctrl+K), a Control Center, Notes, Calculator, Clock, a Games app of free open-source web games, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
+A quiet desktop for the web. Kanni (formerly NyxOS) is a static site (plain HTML, CSS and ES modules, no build step) that runs on GitHub Pages: a dot-field desktop with a floating dock, windows you can snap, a tabbed browser, settings, a first-run tips tour, Spotlight search (Ctrl+K), a Control Center, Notes, Calculator, Clock, a Games app with free open-source games built in, an about:blank launcher, and an optional public Chat with voice backed by Firebase.
 
 Inspired by [GalaxyV7](https://github.com/whosrogo/GalaxyV7) by whosrogo. Kanni is written from scratch and contains no GalaxyV7 code.
 
@@ -46,6 +46,8 @@ js/account.js       username accounts
 js/voice.js         WebRTC voice room
 js/apps/*.js        Browser, Settings, Chat, Widgets, Notes, Calculator, Clock, Games
 rules.html          chat rules page
+games/              bundled open-source games (sources, licenses and changes in games/README.md)
+assets/games/       game thumbnails (credits in CREDITS.md)
 firestore.rules     Firestore security rules
 tests/              rules tests and end-to-end tests
 ```

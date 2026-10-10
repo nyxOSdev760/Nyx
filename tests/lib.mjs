@@ -8,7 +8,7 @@ const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const FB_DIR = new URL('./node_modules/firebase/', import.meta.url).pathname;
 // 16x16 PNG, served for favicon requests so tests never hit the network.
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGklEQVR4nGOYu+X/f0oww6gBowaMGjBcDAAAKFhPLhT5GegAAAAASUVORK5CYII=', 'base64');
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf', '.eot': 'application/vnd.ms-fontobject', '.webmanifest': 'application/manifest+json' };
 
 /* Tiny static server for the site. */
 export function serve(port = 8123) {
@@ -18,7 +18,9 @@ export function serve(port = 8123) {
     if (!p.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
     if (fs.existsSync(p) && fs.statSync(p).isDirectory()) p = path.join(p, 'index.html');
     if (!fs.existsSync(p)) { res.writeHead(404); res.end('not found'); return; }
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(p)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+    // Access-Control-Allow-Origin: * matches GitHub Pages, so bundled games in an
+    // opaque-origin sandbox can still load their fonts, sounds and textures.
+    res.writeHead(200, { 'Content-Type': TYPES[path.extname(p).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
     fs.createReadStream(p).pipe(res);
   });
   return new Promise(r => srv.listen(port, '127.0.0.1', () => r(srv)));

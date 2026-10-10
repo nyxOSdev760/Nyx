@@ -256,7 +256,12 @@ await section('Notes, Calculator, Clock, Games', async () => {
   await page.click('.gm-filter button:has-text("Puzzle")'); await sleep(100);
   check(await page.$$eval('.gm-card', x => x.length) === 2, 'filters by type');
   await page.click('.gm-play[data-game="2048"]'); await sleep(300);
-  check(await page.$eval('.gm-frame', f => f.src) === 'https://gabrielecirulli.github.io/2048/' && await page.$eval('.gm-frame', f => !f.sandbox.contains('allow-top-navigation')), 'plays a game in a sandboxed frame that can’t navigate Kanni away');
+  check(/\/games\/2048\/index\.html$/.test(await page.$eval('.gm-frame', f => f.src)) && await page.$eval('.gm-frame', f => !f.sandbox.contains('allow-top-navigation') && !f.sandbox.contains('allow-same-origin')), 'plays the bundled game, isolated from Kanni’s storage');
+  await page.waitForFunction(() => !document.querySelector('.gm-loading'), null, { timeout: 8000 });
+  const fr = page.frames().find(f => /\/games\/2048\//.test(f.url()));
+  check(fr && await fr.evaluate(() => document.querySelectorAll('.tile').length >= 2), '2048 runs inside Kanni');
+  await fr.evaluate(() => localStorage.setItem('probe', 'kept')); await sleep(500);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('snap:gameSave:2048') || '{}').probe === 'kept'), 'game saves are kept by Kanni, per game');
   await page.click('.gm-back'); await sleep(200);
   check(await page.isVisible('.gm-grid') && (await page.textContent('.gm-card')).includes('Recent'), 'back to the library, last played first');
   await ctx.close();
