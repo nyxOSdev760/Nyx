@@ -22,6 +22,14 @@ import './apps/browser.js';
 import './apps/settings.js';
 import './apps/widgets.js';
 import './apps/chat.js';
+import './apps/notes.js';
+import './apps/calculator.js';
+import './apps/clock.js';
+import './apps/invaders.js';
+import { Spotlight } from './spotlight.js';
+import { initControl } from './control.js';
+import { initDeskMenu } from './deskmenu.js';
+import { KeySheet } from './keys.js';
 import { Account } from './account.js';
 
 const boot = window.KanniBoot || { done() {}, fatal(e) { throw e; } };
@@ -46,6 +54,19 @@ try {
   try { Widgets.init(); } catch (e) { console.error('Widgets disabled:', e); }
   try { Lock.initIdle(); } catch (e) { console.error('Idle lock disabled:', e); }
   try { Sfx.init(); } catch (e) { console.error('Sound disabled:', e); }
+  try { initControl(); } catch (e) { console.error('Control Center disabled:', e); }
+  try { initDeskMenu(); } catch (e) { console.error('Desktop menu disabled:', e); }
+
+  // Spotlight: Ctrl/Cmd+K anywhere, the status-bar button, or Bus 'spotlight'. Shift+? shows the shortcut sheet.
+  Bus.on('spotlight', () => Spotlight.open());
+  Bus.on('shortcut-sheet', () => KeySheet.open());
+  Bus.on('tour', () => Tour.open());
+  $('#search-btn').addEventListener('click', () => Spotlight.toggle());
+  $('#home-search').addEventListener('click', () => Spotlight.open());
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') { e.preventDefault(); Spotlight.toggle(); }
+    else if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.target.closest('input,textarea,select,[contenteditable]')) { e.preventDefault(); KeySheet.open(); }
+  });
 
   /* One canvas (#dots), one render loop: either the interactive dot field or a
      live wallpaper is active, never both. Custom/static wallpapers use neither. */

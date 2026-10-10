@@ -13,9 +13,10 @@ const STEPS = [
   { at: '#dock-apps', title: 'The dock', body: 'Your pinned apps live here. Open apps show up next to them.' },
   { at: '#desktops', title: 'Desktops', body: () => `Press + to add a desktop, up to 4, and keep things tidy.${isCoarse() ? '' : ' Switch with Ctrl+Alt+← and →.'}` },
   { at: '#mode-btn', title: 'Browser mode', body: 'Flip between the desktop and a full-screen browser.' },
-  { at: '#bell-btn', title: 'Notifications', body: 'Alerts and messages collect here.' },
+  { at: '#search-btn', title: 'Search everything', body: () => `Find apps, settings and actions, search the web, or do quick math.${isCoarse() ? '' : ' Press Ctrl+K from anywhere.'}` },
+  { at: '#bell-btn', title: 'Control Center', body: 'Quick toggles for dark mode, Do Not Disturb and sound, plus your notifications.' },
   { at: '#avatar-btn', title: 'Your account', body: 'Sign in to join Chat and voice rooms. It’s optional.' },
-  { title: 'You’re all set', body: 'Change the theme, wallpaper and more anytime in Settings › Appearance.' },
+  { title: 'You’re all set', body: () => `Change the look anytime in Settings › Appearance.${isCoarse() ? '' : ' Tip: right-click the desktop for more.'}` },
 ];
 
 const shown = (el) => !!el && el.getClientRects().length > 0 && el.getBoundingClientRect().width > 0;

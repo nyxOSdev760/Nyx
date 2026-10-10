@@ -5,10 +5,17 @@
 import { $, h, Store } from './core.js';
 import { ICONS, MARK, WORDMARK } from './icons.js';
 
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.4.0';
 
 /* Newest first. Each: { v, date, notes:[...] } */
 export const CHANGELOG = [
+  { v: '1.4.0', date: '2026-10', notes: [
+    'Spotlight: press Ctrl+K (or the search button) to find apps, settings and actions, search the web, or do math.',
+    'Control Center: dark mode, Do Not Disturb, sounds, volume and accent, right above your notifications.',
+    'New apps: Notes, Calculator, Clock (timer and stopwatch) and Invaders 👾.',
+    'Right-click the desktop for quick actions, and dock icons to pin, unpin or quit.',
+    'Keyboard shortcuts sheet: press Shift+?.',
+  ] },
   { v: '1.3.0', date: '2026-10', notes: [
     'NyxOS is now Kanni 👾. Your settings, data and account carry over.',
     'A fresh look: colorful app icons, a bigger dock, an app grid, a desktop clock and a new violet accent.',

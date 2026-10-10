@@ -9,6 +9,7 @@ import { Settings } from './settings.js';
 import { Shortcuts, shortcutTile } from './shortcuts.js';
 import { Account } from './account.js';
 import { Lock } from './lock.js';
+import { showMenu } from './deskmenu.js';
 
 /* ---------- Mode: OS desktop or Browser only ---------- */
 export const Mode = {
@@ -39,12 +40,34 @@ WM.hooks.beforeOpen = (appId) => { if (appId !== 'browser' && Mode.current === '
 // Browser only mode always keeps a browser on screen.
 WM.hooks.afterClose = (win) => { if (win.appId === 'browser' && Mode.current === 'browser') setTimeout(() => Mode.set('browser', { save: false }), 0); };
 WM.hooks.inBrowserMode = () => Mode.current === 'browser';
+// Right edge of the desktop icon columns (0 on phones or when icons are hidden).
+WM.hooks.leftInset = () => {
+  if (isMobile() || document.body.classList.contains('no-icons')) return 0;
+  const last = $('#icons').lastElementChild, area = $('#windows').getBoundingClientRect();
+  return last ? Math.max(0, $$('#icons .dicon').reduce((m, d) => Math.max(m, d.getBoundingClientRect().right), 0) - area.left) : 0;
+};
 WM.hooks.dockRect = (appId) => {
   const el = $$(`.dock-item[data-app="${appId}"]`).find(x => x.getClientRects().length) || $('#launcher-btn');
   return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
 };
 
 /* ---------- Dock ---------- */
+/* Pinned apps: each app's default, overridden by the user's choices (Store 'pins'). */
+const pins = () => { const p = Store.get('pins', {}); return p && typeof p === 'object' ? p : {}; };
+export const isPinned = (app) => { const p = pins(); return typeof p[app.id] === 'boolean' ? p[app.id] : !!app.pinned; };
+export function setPinned(id, on) { Store.set('pins', { ...pins(), [id]: !!on }); renderDock(); }
+function dockMenu(app, anchor) {
+  const r = anchor.getBoundingClientRect();
+  const wins = [...WM.wins.values()].filter(w => w.appId === app.id);
+  showMenu(r.left, r.top - 12, [
+    [ICONS.plus, wins.length ? (app.single ? 'Show window' : 'New window') : 'Open', () => (wins.length && app.single ? dockClick(app.id) : WM.open(app.id))],
+    [ICONS.pin, isPinned(app) ? 'Unpin from dock' : 'Keep in dock', () => setPinned(app.id, !isPinned(app))],
+    wins.length && 'sep',
+    wins.length && [ICONS.close, wins.length > 1 ? `Quit (${wins.length} windows)` : 'Quit', () => wins.forEach(w => WM.close(w.id)), 'danger'],
+  ], app.name, { above: true });
+  // Keep it centred over the icon.
+  const m = $('.ctx-menu'); if (m) m.style.left = `${Math.max(8, Math.min(r.left + r.width / 2 - m.offsetWidth / 2, innerWidth - m.offsetWidth - 8))}px`;
+}
 function dockClick(appId) {
   const wins = [...WM.wins.values()].filter(w => w.appId === appId);
   if (!wins.length) { WM.open(appId); return; }
@@ -80,14 +103,15 @@ function dockItem(app) {
     class: 'dock-item' + (running ? ' running' : '') + (active ? ' active' : ''), type: 'button', 'data-app': app.id, 'data-tip': app.name,
     'aria-label': app.name + (running ? (active ? ', active' : ', running') : ''), 'aria-pressed': running ? String(active) : null,
     onclick: () => dockClick(app.id),
+    oncontextmenu: (e) => { e.preventDefault(); dockMenu(app, e.currentTarget); },
   }, appTile(app));
 }
 export function renderDock() {
   const mobile = isMobile();
   const apps = [...Apps.values()];
   const runningIds = new Set([...WM.wins.values()].map(w => w.appId));
-  $('#dock-apps').replaceChildren(...apps.filter(a => a.pinned).map(dockItem));
-  const extra = apps.filter(a => runningIds.has(a.id) && (mobile || !a.pinned));
+  $('#dock-apps').replaceChildren(...apps.filter(isPinned).map(dockItem));
+  const extra = apps.filter(a => runningIds.has(a.id) && (mobile || !isPinned(a)));
   $('#dock-running').replaceChildren(...extra.map(dockItem));
   $('#dock-sep').hidden = !extra.length || mobile;
   $('#home-btn').setAttribute('aria-current', String(mobile && !document.body.classList.contains('has-win')));
@@ -214,7 +238,9 @@ export function startClock() {
 
 /* ---------- Wiring ---------- */
 export function initShell() {
-  $('#launcher-btn').innerHTML = MARK;
+  $('#launcher-btn').replaceChildren(h('span', { class: 'tile launch-tile', 'aria-hidden': 'true', svg: ICONS.grid }));
+  $('#search-btn').innerHTML = ICONS.search;
+  $('#home-search').replaceChildren(h('span', { svg: ICONS.search }), 'Search apps, settings, the web');
   $('#launcher-foot').innerHTML = MARK + WORDMARK;
   $('#home-btn').innerHTML = ICONS.grid;
   $('#bell-btn').insertAdjacentHTML('afterbegin', ICONS.bell);
@@ -254,7 +280,7 @@ export function initShell() {
     }
   });
   document.addEventListener('pointerdown', e => {
-    if (!e.target.closest('.panel,#launcher-btn,#bell-btn,#avatar-btn')) closePanels();
+    if (!e.target.closest('.panel,#launcher-btn,#bell-btn,#avatar-btn,.ctx-menu')) closePanels();
     if (!e.target.closest('.dicon')) $$('.dicon.sel').forEach(x => x.classList.remove('sel'));
   });
 

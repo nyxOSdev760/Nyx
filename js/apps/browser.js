@@ -233,11 +233,11 @@ registerApp({
       Bookmarks.toggle(u, active.title || labelFor(u));
     }
     function renderBookmarks() {
-      const on = Settings.get('showBookmarks');
+      // The bar only appears once there's something on it.
+      const list = Bookmarks.list();
+      const on = Settings.get('showBookmarks') && list.length > 0;
       bookmarksBar.hidden = !on;
       if (!on) return;
-      const list = Bookmarks.list();
-      if (!list.length) { bookmarksBar.replaceChildren(h('span', { class: 'br-bm-empty', text: 'Bookmark a page with the star to pin it here.' })); return; }
       bookmarksBar.replaceChildren(...list.map((b, idx) => {
         const el = h('button', { class: 'br-bm', type: 'button', draggable: 'true', title: b.title + ' — ' + b.url, 'data-i': idx, onclick: ctx.guard(() => navigate(active, { kind: 'web', url: b.url })) },
           siteIcon(b.url), h('span', { class: 'br-bm-t', text: b.title }));
@@ -325,7 +325,7 @@ registerApp({
     renderBookmarks();
     newTab((ctx.args && ctx.args.url) || (Settings.get('homepage') || undefined));
     return {
-      handleArgs: (a) => { if (a && a.url) newTab(a.url); },
+      handleArgs: (a) => { if (a && (a.url || a.newTab)) newTab(a.url || undefined); },
       destroy: () => { ctx.el.removeEventListener('keydown', onKey); off.forEach(f => f()); tabs.forEach(t => { clearTimeout(t.timer); if (t.frame) t.frame.src = 'about:blank'; }); },
     };
   },

@@ -37,6 +37,10 @@ const SOUNDS = {
   lock(ac, t, m) { tone(ac, t, { freq: 520, glideTo: 260, type: 'sine', dur: 0.2, gain: 0.14 * m }); },
   unlock(ac, t, m) { tone(ac, t, { freq: 320, glideTo: 640, type: 'sine', dur: 0.18, gain: 0.14 * m }); },
   toggle(ac, t, m) { tone(ac, t, { freq: 600, type: 'sine', dur: 0.06, gain: 0.08 * m }); },
+  laser(ac, t, m) { tone(ac, t, { freq: 1200, glideTo: 380, type: 'square', dur: 0.09, gain: 0.05 * m }); },
+  boom(ac, t, m) { tone(ac, t, { freq: 180, glideTo: 50, type: 'sawtooth', dur: 0.22, gain: 0.1 * m }); },
+  hurt(ac, t, m) { tone(ac, t, { freq: 400, glideTo: 90, type: 'square', dur: 0.4, gain: 0.1 * m }); },
+  wave(ac, t, m) { [392, 523.25, 659.25, 1046.5].forEach((f, i) => tone(ac, t + i * 0.08, { freq: f, type: 'triangle', dur: 0.18, gain: 0.1 * m })); },
   startup(ac, t, m) { [523.25, 659.25, 783.99].forEach((f, i) => tone(ac, t + i * 0.12, { freq: f, type: 'sine', dur: 0.4, gain: 0.12 * m, attack: 0.02 })); },
 };
 

@@ -139,10 +139,11 @@ await section('Lock screen', async () => {
 await section('Browser: bookmarks + recently closed', async () => {
   const { ctx, page } = await open(DESK, 'bm');
   await page.evaluate(() => window.Kanni.open('browser')); await sleep(300);
-  check(await page.isVisible('.br-bookmarks'), 'bookmarks bar visible');
+  check(!(await page.isVisible('.br-bookmarks')), 'empty bookmarks bar stays out of the way');
   await page.fill('.br-addr input', 'example.com'); await page.press('.br-addr input', 'Enter'); await sleep(700);
   await page.click('.br-star'); await sleep(250);
   check(await page.$eval('.br-star', s => s.classList.contains('on')) && await page.$$eval('.br-bm', x => x.length) === 1, 'star adds a bookmark to the bar');
+  check(await page.isVisible('.br-bookmarks'), 'bookmarks bar appears once something is bookmarked');
   await page.click('.br-new'); await sleep(150);
   await page.fill('.br-addr input', 'example.org'); await page.press('.br-addr input', 'Enter'); await sleep(600);
   const n1 = await page.$$eval('.br-tab', x => x.length);
@@ -164,7 +165,7 @@ await section('Sounds + What’s new', async () => {
   await sleep(600);
   check(await page.isVisible('#whatsnew'), 'What’s new shows after a version change');
   await page.click('#whatsnew .btn'); await sleep(200);
-  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.3.0"', 'records the new version');
+  check(await page.evaluate(() => localStorage.getItem('snap:seenVersion')) === '"1.4.0"', 'records the new version');
   await page.evaluate(() => window.Kanni.open('settings', { page: 'sound' })); await sleep(300);
   await page.click('.srow:has-text("Test") button'); await sleep(150);
   await page.evaluate(() => { const r = document.querySelector('.range'); r.value = '65'; r.dispatchEvent(new Event('input', { bubbles: true })); }); await sleep(150);
@@ -177,6 +178,95 @@ await section('Sounds + What’s new', async () => {
   await sleep(500);
   check(!(await fresh.page.isVisible('#whatsnew')), 'fresh install does not show What’s new');
   await fresh.ctx.close();
+});
+
+await section('Spotlight, Control Center and menus', async () => {
+  const { ctx, page } = await open(DESK, 'spot');
+  check(await page.$('#launcher-btn .tile .ico') != null, 'dock launcher shows an app-grid icon');
+  await page.keyboard.press('Control+k'); await sleep(250);
+  check(await page.isVisible('#spotlight input'), 'Ctrl+K opens Spotlight');
+  await page.keyboard.type('2*(3+4)^2'); await sleep(150);
+  check((await page.textContent('#spotlight .sp-row[aria-selected=true]')).includes('98'), 'Spotlight does math');
+  await page.fill('#spotlight input', 'calcu'); await sleep(150);
+  await page.keyboard.press('Enter'); await sleep(400);
+  check(!(await page.$('#spotlight')) && await page.isVisible('.win[data-app=calculator]'), 'Enter opens the top app');
+  await page.keyboard.press('Control+k'); await sleep(200);
+  await page.fill('#spotlight input', 'appearance'); await sleep(150);
+  check((await page.textContent('#spotlight .sp-row[aria-selected=true]')).includes('Appearance'), 'finds Settings pages');
+  await page.keyboard.press('Escape'); await sleep(250);
+  check(!(await page.$('#spotlight')), 'Esc closes Spotlight');
+  await page.click('#search-btn'); await sleep(200);
+  check(await page.isVisible('#spotlight'), 'search button opens Spotlight');
+  await page.keyboard.press('Escape'); await sleep(250);
+
+  await page.click('#bell-btn'); await sleep(250);
+  check(await page.isVisible('#cc .cc-tog[data-tog=dnd]'), 'Control Center shows quick toggles');
+  await page.click('#cc .cc-tog[data-tog=dnd]'); await sleep(150);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('snap:settings')).notifications === false), 'Do Not Disturb toggles the setting');
+  check(await page.$eval('#cc .cc-tog[data-tog=dnd]', b => b.getAttribute('aria-pressed') === 'true'), 'toggle shows its new state');
+  await page.click('#cc .cc-tog[data-tog=dark]'); await sleep(150);
+  check(await page.$eval('html', e => e.dataset.theme) === 'light', 'dark mode toggle switches the theme');
+  await page.click('#cc .cc-tog[data-tog=dark]'); await sleep(150);
+  await page.keyboard.press('Escape'); await sleep(150);
+
+  await page.mouse.click(900, 420, { button: 'right' }); await sleep(200);
+  check(await page.isVisible('.ctx-menu[aria-label=Desktop]'), 'right-click opens the desktop menu');
+  await page.click('.ctx-menu button:has-text("New note")'); await sleep(400);
+  check(await page.isVisible('.win[data-app=notes] .nt-ed'), 'New note opens Notes with an editor');
+
+  await page.click('.dock-item[data-app=chat]', { button: 'right' }); await sleep(200);
+  await page.click('.ctx-menu button:has-text("Unpin")'); await sleep(200);
+  check(!(await page.$('#dock-apps .dock-item[data-app=chat]')) && await page.evaluate(() => JSON.parse(localStorage.getItem('snap:pins')).chat === false), 'dock menu unpins an app');
+  await page.mouse.click(700, 200); await page.keyboard.press('Shift+?'); await sleep(250);
+  check(await page.isVisible('#keysheet'), 'Shift+? shows keyboard shortcuts');
+  await page.keyboard.press('Escape'); await sleep(250);
+  await ctx.close();
+});
+
+await section('Notes, Calculator, Clock, Invaders', async () => {
+  const { ctx, page } = await open(DESK, 'apps');
+  await page.evaluate(() => window.Kanni.open('notes', { new: true })); await sleep(300);
+  await page.keyboard.type('Shopping\nmilk and eggs'); await sleep(500);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('snap:notes'))[0].text) === 'Shopping\nmilk and eggs', 'Notes saves as you type');
+  check((await page.textContent('.nt-item.on')).includes('Shopping'), 'first line is the title');
+  await page.reload(); await page.waitForFunction(() => !document.getElementById('boot'));
+  await page.evaluate(() => window.Kanni.open('notes')); await sleep(300);
+  check((await page.inputValue('.nt-ed')) === 'Shopping\nmilk and eggs', 'notes persist after reload');
+
+  await page.evaluate(() => window.Kanni.open('calculator')); await sleep(300);
+  await page.keyboard.type('12*7+5'); await sleep(100);
+  check((await page.textContent('.calc-expr')) === '12×7+5' && (await page.textContent('.calc-out')).includes('89'), 'Calculator shows the expression and live answer');
+  await page.keyboard.press('Enter'); await sleep(100);
+  check((await page.textContent('.calc-expr')) === '89', 'Enter gives the result');
+  await page.click('.calc-k[data-k="clear"]');
+  for (const k of ['7', '÷', '0', 'eq']) await page.click(`.calc-k[data-k="${k}"]`);
+  check((await page.textContent('.calc-out')).includes('Can’t'), 'divide by zero is handled');
+
+  await page.evaluate(() => window.Kanni.open('clock', { timer: 5 })); await sleep(1200);
+  check(/^04:5\d$/.test(await page.textContent('.ck-big')), 'Clock timer counts down', await page.textContent('.ck-big'));
+  await page.click('.ck-main'); await sleep(100);
+  check((await page.textContent('.ck-main')) === 'Resume', 'timer pauses');
+  await page.click('.ck-seg [data-v=watch]'); await page.click('.ck-main'); await sleep(600); await page.click('.ck-second'); await sleep(100);
+  check(await page.$$eval('.ck-laps li', x => x.length) === 1, 'stopwatch records a lap');
+
+  await page.evaluate(() => window.Kanni.open('invaders')); await sleep(400);
+  await page.keyboard.press('Space'); await sleep(200);
+  for (let i = 0; i < 10; i++) { await page.keyboard.press('Space'); await sleep(120); }
+  check(!(await page.$('.app-error')), 'Invaders runs');
+  await ctx.close();
+
+  const m = await open(PHONE, 'apps-phone');
+  check(await m.page.isVisible('#home-search'), 'phone home has a search pill');
+  await m.page.tap('#home-search'); await sleep(250);
+  check(await m.page.isVisible('#spotlight input'), 'search pill opens Spotlight');
+  check(!(await noOverflow(m.page)), 'Spotlight fits a phone', await noOverflow(m.page));
+  await m.page.keyboard.press('Escape'); await sleep(200);
+  for (const app of ['notes', 'calculator', 'clock', 'invaders']) {
+    await m.page.evaluate(a => window.Kanni.open(a), app); await sleep(350);
+    check(!(await m.page.$('.app-error')) && !(await noOverflow(m.page)), `${app} fits a phone`, await noOverflow(m.page));
+    await m.page.tap(`.win[data-app=${app}] .win-home`); await sleep(250);
+  }
+  await m.ctx.close();
 });
 
 const unexpected = allErrors.filter(e => !/can escape its sandboxing/.test(e));

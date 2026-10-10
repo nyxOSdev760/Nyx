@@ -12,7 +12,7 @@ export const WM = {
   wins: new Map(), z: 10, focusedId: null,
   desktop: 0, desktopCount: 1, MAX_DESKTOPS: 4,
   /* Set by the shell: hooks keep this module free of shell imports. */
-  hooks: { beforeOpen: () => {}, afterClose: () => {}, dockRect: () => null, inBrowserMode: () => false },
+  hooks: { beforeOpen: () => {}, afterClose: () => {}, dockRect: () => null, inBrowserMode: () => false, leftInset: () => 0 },
   area: () => $('#windows').getBoundingClientRect(),
   onCurrent(win) { return win.desktop === this.desktop; },
   changed() { document.body.classList.toggle('has-win', [...this.wins.values()].some(w => !w.minimized && this.onCurrent(w))); Bus.emit('wm'); },
@@ -110,7 +110,9 @@ export const WM = {
     const id = uid(), a = this.area();
     const w = Math.min(app.size[0], a.width - 32), ht = Math.min(app.size[1], a.height - 32);
     const off = (this.wins.size % 6) * 28;
-    const left = Math.max(16, Math.round((a.width - w) / 2 - 56 + off));
+    // Open clear of the desktop icons when there's room, otherwise as far right as fits.
+    const inset = this.hooks.leftInset();
+    const left = Math.max(16, Math.min(Math.max(inset + 16, Math.round((a.width - w) / 2 - 56 + off)), Math.round(a.width - w - 16)));
     const top = Math.max(16, Math.round((a.height - ht) / 2 - 24 + off));
 
     const titleEl = h('span', { class: 'win-title', text: app.name });
